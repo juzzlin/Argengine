@@ -1,12 +1,20 @@
 Argengine
-====================
+=========
 
 Looking for a simple argument parser logger for your C++ project? `Argengine` might be for you.
 
 # Features
 
 * Automatic help generation
+* Builds with CMake
+* Extensive unit tests
+* Single .hpp/.cpp
 * Very easy to use
+
+# Design choices
+
+* The PIMPL idiom is used to maintain API/ABI compatibility
+* Most of the data is passed by value for a cleaner API. It is assumed that argument parsing is not the performance bottleneck of your application
 
 # Installation
 
