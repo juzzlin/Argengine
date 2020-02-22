@@ -206,8 +206,8 @@ Argengine::Argengine(int argc, char ** argv, bool addDefaultHelp)
 {
 }
 
-Argengine::Argengine(const ArgumentVector & args, bool addDefaultHelp)
-  : m_impl(new Impl(args, addDefaultHelp))
+Argengine::Argengine(ArgumentVector args, bool addDefaultHelp)
+    : m_impl(new Impl(args, addDefaultHelp))
 {
 }
 

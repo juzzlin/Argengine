@@ -43,7 +43,7 @@ public:
     //! Constructor.
     //! \param args The arguments as a vector of strings. It is assumed, that the first element is the name of the executed application.
     using ArgumentVector = std::vector<std::string>;
-    explicit Argengine(const ArgumentVector & args, bool addDefaultHelp = true);
+    explicit Argengine(ArgumentVector args, bool addDefaultHelp = true);
 
     //! Destructor.
     ~Argengine();
