@@ -38,7 +38,7 @@ class Argengine
 public:
 
     //! Constructor.
-    explicit Argengine(int argc, char ** argv, bool addDefaultHelp = true);
+    Argengine(int argc, char **argv, bool addDefaultHelp = true);
 
     //! Constructor.
     //! \param args The arguments as a vector of strings. It is assumed, that the first element is the name of the executed application.
