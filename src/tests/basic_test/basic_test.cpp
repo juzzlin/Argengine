@@ -36,7 +36,7 @@
 
 using juzzlin::Argengine;
 
-void testSimpleValueless_CallbackCalled_ShouldFail()
+void testValueless_CallbackCalled_ShouldFail()
 {
     Argengine ae({ "test" });
     bool triggered = false;
@@ -48,7 +48,7 @@ void testSimpleValueless_CallbackCalled_ShouldFail()
     assert(!triggered);
 }
 
-void testSimpleValueless_CallbackCalled_ShouldSucceed()
+void testValueless_CallbackCalled_ShouldSucceed()
 {
     Argengine ae({ "test", "-f" });
     bool triggered = false;
@@ -58,6 +58,35 @@ void testSimpleValueless_CallbackCalled_ShouldSucceed()
     ae.parse();
 
     assert(triggered);
+}
+
+void testSingleValue_NoValueGiven_ShouldFail()
+{
+    Argengine ae({ "test", "-f" });
+    bool called = false;
+    ae.addArgument({ "-f" }, [&](std::string) {
+        called = true;
+    });
+    std::string error;
+    try {
+        ae.parse();
+    } catch (std::runtime_error & e) {
+        error = e.what();
+    }
+    assert(!called);
+    assert(error == "No value for argument '-f' given!");
+}
+
+void testSingleValue_ValueGiven_ShouldSucceed()
+{
+    Argengine ae({ "test", "-f", "42" });
+    std::string f;
+    ae.addArgument({ "-f" }, [&](std::string value) {
+        f = value;
+    });
+    std::string error;
+    ae.parse();
+    assert(f == ae.arguments().at(2));
 }
 
 void testDefaultHelpOverride_HelpActive_ShouldFail()
@@ -151,9 +180,13 @@ void testUnknownArgumentBehavior_SetWarn_ShouldWarn()
 
 int main(int, char **)
 {
-    testSimpleValueless_CallbackCalled_ShouldFail();
+    testValueless_CallbackCalled_ShouldFail();
 
-    testSimpleValueless_CallbackCalled_ShouldSucceed();
+    testValueless_CallbackCalled_ShouldSucceed();
+
+    testSingleValue_NoValueGiven_ShouldFail();
+
+    testSingleValue_ValueGiven_ShouldSucceed();
 
     testDefaultHelpOverride_HelpActive_ShouldFail();
 

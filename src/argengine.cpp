@@ -48,23 +48,21 @@ public:
     void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required, std::string infoText)
     {
         if (const auto existing = getArgumentDefinition(argumentVariants)) {
-            throw std::runtime_error("Argument '" + existing->getVariantsString() + "' already defined!");
+            throwArgumentExistingError(*existing);
         } else {
             const auto argumentDefinition = std::make_shared<ArgumentDefinition>(argumentVariants, callback, required, infoText);
             m_argumentDefinitions.push_back(argumentDefinition);
         }
     }
 
-    void addHelp()
+    void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required, std::string infoText)
     {
-        m_helpText = "Usage: " + m_args.at(0) + " [OPTIONS]";
-
-        addArgument(
-          { "-h", "--help" }, [=] {
-              printHelp();
-              exit(EXIT_SUCCESS);
-          },
-          false, "Show this help.");
+        if (const auto existing = getArgumentDefinition(argumentVariants)) {
+            throwArgumentExistingError(*existing);
+        } else {
+            const auto argumentDefinition = std::make_shared<ArgumentDefinition>(argumentVariants, callback, required, infoText);
+            m_argumentDefinitions.push_back(argumentDefinition);
+        }
     }
 
     ArgumentVector arguments() const
@@ -105,12 +103,17 @@ public:
 
     void parse()
     {
-        // TODO: Check required, Positional arguments
         for (size_t i = 1; i < m_args.size(); i++) {
             const auto arg = m_args.at(i);
             if (const auto match = getArgumentDefinition(arg)) {
                 if (match->valuelessCallback) {
                     match->valuelessCallback();
+                } else if (match->singleStringCallback) {
+                    if (i + 1 < m_args.size()) {
+                        match->singleStringCallback(m_args.at(i + 1));
+                    } else {
+                        throwNoValueError(*match);
+                    }
                 }
             } else {
                 const auto warning = "Uknown argument '" + arg + "'!";
@@ -140,9 +143,29 @@ private:
         ArgumentDefinition(const ArgumentVariants & variants, ValuelessCallback callback, bool required, std::string infoText)
           : variants(variants)
           , valuelessCallback(callback)
+          , singleStringCallback(nullptr)
           , required(required)
           , infoText(infoText)
         {
+        }
+
+        ArgumentDefinition(const ArgumentVariants & variants, SingleStringCallback callback, bool required, std::string infoText)
+          : variants(variants)
+          , valuelessCallback(nullptr)
+          , singleStringCallback(callback)
+          , required(required)
+          , infoText(infoText)
+        {
+        }
+
+        bool isMatch(ArgumentVariants variants) const
+        {
+            for (auto && variant : variants) {
+                if (this->variants.count(variant)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         std::string getVariantsString() const
@@ -162,20 +185,32 @@ private:
 
         ValuelessCallback valuelessCallback = nullptr;
 
+        SingleStringCallback singleStringCallback = nullptr;
+
         bool required = false;
 
         std::string infoText;
     };
+
+    void addHelp()
+    {
+        m_helpText = "Usage: " + m_args.at(0) + " [OPTIONS]";
+
+        addArgument(
+          { "-h", "--help" }, [=] {
+              printHelp();
+              exit(EXIT_SUCCESS);
+          },
+          false, "Show this help.");
+    }
 
     using ArgumentDefinitionPtr = std::shared_ptr<ArgumentDefinition>;
 
     ArgumentDefinitionPtr getArgumentDefinition(ArgumentVariants variants) const
     {
         for (auto && definition : m_argumentDefinitions) {
-            for (auto && variant : variants) {
-                if (definition->variants.count(variant)) {
-                    return definition;
-                }
+            if (definition->isMatch(variants)) {
+                return definition;
             }
         }
         return nullptr;
@@ -184,6 +219,16 @@ private:
     ArgumentDefinitionPtr getArgumentDefinition(std::string argument) const
     {
         return getArgumentDefinition(ArgumentVariants { argument });
+    }
+
+    [[noreturn]] void throwArgumentExistingError(const ArgumentDefinition & existing)
+    {
+        throw std::runtime_error("Argument '" + existing.getVariantsString() + "' already defined!");
+    }
+
+    [[noreturn]] void throwNoValueError(const ArgumentDefinition & existing)
+    {
+        throw std::runtime_error("No value for argument '" + existing.getVariantsString() + "' given!");
     }
 
     ArgumentVector m_args;
@@ -207,11 +252,16 @@ Argengine::Argengine(int argc, char ** argv, bool addDefaultHelp)
 }
 
 Argengine::Argengine(ArgumentVector args, bool addDefaultHelp)
-    : m_impl(new Impl(args, addDefaultHelp))
+  : m_impl(new Impl(args, addDefaultHelp))
 {
 }
 
 void Argengine::addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required, std::string infoText)
+{
+    m_impl->addArgument(argumentVariants, callback, required, infoText);
+}
+
+void Argengine::addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required, std::string infoText)
 {
     m_impl->addArgument(argumentVariants, callback, required, infoText);
 }
