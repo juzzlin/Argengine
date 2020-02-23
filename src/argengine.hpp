@@ -50,14 +50,26 @@ public:
 
     using ArgumentVariants = std::set<std::string>;
     using ValuelessCallback = std::function<void()>;
-    void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required = false, std::string infoText = "");
+    void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback);
+
+    void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required);
+
+    void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required, std::string infoText);
 
     using SingleStringCallback = std::function<void(std::string)>;
-    void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required = false, std::string infoText = "");
+    void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback);
+
+    void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required);
+
+    void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required, std::string infoText);
 
     using StringValueVector = std::vector<std::string>;
     using MultiStringCallback = std::function<void(StringValueVector)>;
-    void addArgument(ArgumentVariants argumentVariants, MultiStringCallback callback, bool required = false, std::string infoText = "");
+    void addArgument(ArgumentVariants argumentVariants, MultiStringCallback callback);
+
+    void addArgument(ArgumentVariants argumentVariants, MultiStringCallback callback, bool required);
+
+    void addArgument(ArgumentVariants argumentVariants, MultiStringCallback callback, bool required, std::string infoText);
 
     //! \return All given arguments.
     ArgumentVector arguments() const;

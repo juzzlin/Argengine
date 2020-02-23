@@ -285,9 +285,29 @@ Argengine::Argengine(ArgumentVector args, bool addDefaultHelp)
 {
 }
 
+void Argengine::addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback)
+{
+    m_impl->addArgument(argumentVariants, callback, false, "");
+}
+
+void Argengine::addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required)
+{
+    m_impl->addArgument(argumentVariants, callback, required, "");
+}
+
 void Argengine::addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required, std::string infoText)
 {
     m_impl->addArgument(argumentVariants, callback, required, infoText);
+}
+
+void Argengine::addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback)
+{
+    m_impl->addArgument(argumentVariants, callback, false, "");
+}
+
+void Argengine::addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required)
+{
+    m_impl->addArgument(argumentVariants, callback, required, "");
 }
 
 void Argengine::addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required, std::string infoText)
