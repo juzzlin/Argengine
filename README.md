@@ -58,15 +58,47 @@ In your code:
 
 `$ sudo make install`
 
-# Examples
+# Usage In A Nutshell
 
-The basic principle is that for each argument a lambda callback is added. 
+The basic principle is that for each argument a lambda callback is added.
 
-For valueless arguments it's of the form `[] {}` and for single value arguments it's of the form `[] (std::string value) {}`.
+Valueless:
+
+```
+    ...
+
+    juzzlin::Argengine ae(argc, argv);
+    ae.addArgument({"-f", "--foo"}, [] {
+        // Do something
+    });
+    ae.parse();
+
+    ...
+```
+
+Single value:
+
+```
+    ...
+
+    juzzlin::Argengine ae(argc, argv);
+    ae.addArgument({"-f", "--foo"}, [] (std::string value) {
+        // Do something with value
+    });
+    ae.parse();
+
+    ...
+```
 
 There can be as many argument variants as liked, usually the short and long version e.g `-f` and `--foo`.
 
+Argengine doesn't care about the naming of the arguments and they can be anything: `-f`, `a`, `/c`, `foo`, `--foo`..
+
+# Examples
+
 ## Valueless arguments: The simplest possible example
+
+Valueless arguments are arguments without any value, so they are just flags. The lambda callback is of the form `[] {}`.
 
 ```
 #include "argengine.hpp"
@@ -74,10 +106,9 @@ There can be as many argument variants as liked, usually the short and long vers
 
 int main(int argc, char ** argv)
 {
-    using juzzlin::Argengine;
-    Argengine ae(argc, argv);
+    juzzlin::Argengine ae(argc, argv);
     ae.addArgument({"-f", "--foo"}, [] {
-        std::cout << "-f or --foo set!"  << std::endl;
+        std::cout << "'-f' or '--foo' given!"  << std::endl;
     });
     ae.parse();
 
@@ -95,8 +126,7 @@ Flags can be set by using standard lambda captures:
 
 int main(int argc, char ** argv)
 {
-    using juzzlin::Argengine;
-    Argengine ae(argc, argv);
+    juzzlin::Argengine ae(argc, argv);
 
     bool fooSet {};
     ae.addArgument({"-f", "--foo"}, [&] {
@@ -116,11 +146,63 @@ int main(int argc, char ** argv)
 }
 ```
 
-## Handling unknown arguments
+## Single value arguments: The simplest possible example
+
+Single value arguments are arguments that can have only one value.
+
+The following formats are allowed: `-f 42`, `--foo=42`, `a=1`..
+
+So, there must be either space or '`=`'.
+
+The lambda callback is of the form `[] (std::string value) {}`.
+
+```
+#include "argengine.hpp"
+#include <iostream>
+
+int main(int argc, char ** argv)
+{
+    juzzlin::Argengine ae(argc, argv);
+    ae.addArgument({"-f", "--foo"}, [] (std::string value) {
+        std::cout << "Value for '-f' or '--foo': " << value << std::endl;
+    });
+    ae.parse();
+
+    return 0;
+}
+```
+
+## General: Marking an argument **required**
+
+In order to mark an argument mandatory, there's an overload that accepts `bool required` right after the callback:
+
+```
+    ...
+
+    juzzlin::Argengine ae(argc, argv);
+    ae.addArgument({"-f", "--foo"}, [] {
+        // Do something
+    },
+    true); // Required
+
+    ...
+```
+
+## General: Handling unknown arguments
 
 For the handling of unknown arguments there are three modes: `Ignore`, `Warn`, and `Throw`. The default is `Warn`.
 
-This can be selected with `Argengine::setUnknownArgumentBehavior(UnknownArgumentBehavior behavior)`.
+This can be selected with `Argengine::setUnknownArgumentBehavior(UnknownArgumentBehavior behavior)`:
+
+```
+    ...
+
+    using juzzlin::Argengine;
+    Argengine ae(argc, argv);
+    ae.setUnknownArgumentBehavior(Argengine::UnknownArgumentBehavior::Throw);
+
+    ...
+```
 
 # Requirements
 
