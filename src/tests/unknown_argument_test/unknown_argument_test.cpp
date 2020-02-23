@@ -36,6 +36,8 @@
 
 using juzzlin::Argengine;
 
+const std::string name = "Argengine";
+
 void testUnknownArgumentBehavior_SetIgnore_ShouldIgnore()
 {
     Argengine ae({ "test", "--foo1" });
@@ -59,7 +61,7 @@ void testUnknownArgumentBehavior_SetThrow_ShouldThrow()
     } catch (std::runtime_error & e) {
         error = e.what();
     }
-    assert(error == "Uknown argument '" + ae.arguments().at(1) + "'!");
+    assert(error == name + ": Uknown argument '" + ae.arguments().at(1) + "'!");
 }
 
 void testUnknownArgumentBehavior_SetWarn_ShouldWarn()
@@ -73,7 +75,7 @@ void testUnknownArgumentBehavior_SetWarn_ShouldWarn()
     ae.setErrorStream(ss);
     ae.parse();
 
-    assert(ss.str() == "Uknown argument '" + ae.arguments().at(1) + "'!\n");
+    assert(ss.str() == name + ": Uknown argument '" + ae.arguments().at(1) + "'!\n");
 }
 
 void testUnknownArgumentBehavior_DefaultIsWarn_ShouldWarn()
@@ -86,7 +88,7 @@ void testUnknownArgumentBehavior_DefaultIsWarn_ShouldWarn()
     ae.setErrorStream(ss);
     ae.parse();
 
-    assert(ss.str() == "Uknown argument '" + ae.arguments().at(1) + "'!\n");
+    assert(ss.str() == name + ": Uknown argument '" + ae.arguments().at(1) + "'!\n");
 }
 
 int main(int, char **)

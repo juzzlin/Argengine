@@ -36,6 +36,8 @@
 
 using juzzlin::Argengine;
 
+const std::string name = "Argengine";
+
 void testSingleValue_NoValueGiven_ShouldFail()
 {
     Argengine ae({ "test", "-f" });
@@ -50,7 +52,7 @@ void testSingleValue_NoValueGiven_ShouldFail()
         error = e.what();
     }
     assert(!called);
-    assert(error == "No value for argument '-f' given!");
+    assert(error == name + ": No value for argument '-f' given!");
 }
 
 void testSingleValue_ValueGiven_ShouldSucceed()
@@ -91,7 +93,7 @@ void testSingleValue_NoValueGivenWithAssignment_ShouldFail()
         error = e.what();
     }
     assert(!called);
-    assert(error == "No value for argument 'f' given!");
+    assert(error == name + ": No value for argument 'f' given!");
 }
 
 void testSingleValue_MultipleValuesGivenWithAssignments_ShouldSucceed()

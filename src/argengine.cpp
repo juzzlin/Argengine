@@ -37,7 +37,7 @@ public:
       : m_args(args)
     {
         if (m_args.empty()) {
-            throw std::runtime_error("Argument vector is empty!");
+            throw std::runtime_error(name() + ": Argument vector is empty!");
         }
 
         if (addDefaultHelp) {
@@ -233,7 +233,7 @@ private:
 
     void handleUnknownArgument(std::string arg)
     {
-        const auto warning = "Uknown argument '" + arg + "'!";
+        const auto warning = name() + ": Uknown argument '" + arg + "'!";
         switch (m_unknownArgumentBehavior) {
         case UnknownArgumentBehavior::Ignore:
             break;
@@ -245,14 +245,19 @@ private:
         }
     }
 
+    std::string name() const
+    {
+        return "Argengine";
+    }
+
     [[noreturn]] void throwArgumentExistingError(const ArgumentDefinition & existing)
     {
-        throw std::runtime_error("Argument '" + existing.getVariantsString() + "' already defined!");
+        throw std::runtime_error(name() + ": Argument '" + existing.getVariantsString() + "' already defined!");
     }
 
     [[noreturn]] void throwNoValueError(const ArgumentDefinition & existing)
     {
-        throw std::runtime_error("No value for argument '" + existing.getVariantsString() + "' given!");
+        throw std::runtime_error(name() + ": No value for argument '" + existing.getVariantsString() + "' given!");
     }
 
     ArgumentVector m_args;
