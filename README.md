@@ -1,12 +1,14 @@
 Argengine
 =========
 
-Looking for a simple argument parser logger for your C++ project? `Argengine` might be for you.
+Looking for a simple CLI argument parser for your C++ project? `Argengine` might be for you.
 
 # Features
 
 * Automatic help generation
+* Based on simple lambda callbacks
 * Builds with CMake
+* Designed for modern C++
 * Extensive unit tests
 * Single .hpp/.cpp
 * Very easy to use
@@ -57,7 +59,61 @@ In your code:
 
 # Examples
 
-TODO
+The basic principle is that for each argument a lambda callback is added. 
+
+For valueless arguments it's of the form `[] {}` and for single value arguments it's of the form `[] (std::string value) {}`.
+
+There can be as many argument variants as liked, usually the short and long version e.g `-f` and `--foo`.
+
+## Valueless arguments: The simplest possible example
+
+```
+#include "argengine.hpp"
+#include <iostream>
+
+int main(int argc, char ** argv)
+{
+    using juzzlin::Argengine;
+    Argengine ae(argc, argv);
+    ae.addArgument({"-f", "--foo"}, [] {
+        std::cout << "-f or --foo set!"  << std::endl;
+    });
+    ae.parse();
+
+    return 0;
+}
+```
+
+## Valueless arguments: Set a flag when set
+
+Flags can be set by using standard lambda captures:
+
+```
+#include "argengine.hpp"
+#include <iostream>
+
+int main(int argc, char ** argv)
+{
+    using juzzlin::Argengine;
+    Argengine ae(argc, argv);
+
+    bool fooSet = false;
+    ae.addArgument({"-f", "--foo"}, [&] {
+        fooSet = true;
+    });
+
+    bool barSet = false;
+    ae.addArgument({"--bar"}, [&] {
+        barSet = true;
+    });
+
+    ae.parse();
+
+    std::cout << fooSet << " " << barSet << std::endl;
+
+    return 0;
+}
+```
 
 # Requirements
 
