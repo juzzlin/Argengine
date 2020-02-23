@@ -105,6 +105,52 @@ void testSingleValue_ValueGiven_ShouldSucceed()
     assert(f == ae.arguments().at(2));
 }
 
+void testSingleValue_ValueGivenWithAssignment_ShouldSucceed()
+{
+    Argengine ae({ "test", "f=42" });
+    std::string f;
+    ae.addArgument({ "f" }, [&](std::string value) {
+        f = value;
+    });
+    std::string error;
+    ae.parse();
+    assert(f == "42");
+}
+
+void testSingleValue_NoValueGivenWithAssignment_ShouldFail()
+{
+    Argengine ae({ "test", "f=" });
+    bool called = false;
+    ae.addArgument({ "f" }, [&](std::string) {
+        called = true;
+    });
+    std::string error;
+    try {
+        ae.parse();
+    } catch (std::runtime_error & e) {
+        error = e.what();
+    }
+    assert(!called);
+    assert(error == "No value for argument 'f' given!");
+}
+
+void testSingleValue_MultipleValuesGivenWithAssignments_ShouldSucceed()
+{
+    Argengine ae({ "test", "a=1", "bb=22", "ccc=333" });
+    std::map<std::string, std::string> values;
+    ae.addArgument({ "a", "aa" }, [&](std::string value) {
+        values["a"] = value;
+    });
+    ae.addArgument({ "bb" }, [&](std::string value) {
+        values["bb"] = value;
+    });
+    ae.addArgument({ "ccc" }, [&](std::string value) {
+        values["ccc"] = value;
+    });
+    std::string error;
+    ae.parse();
+}
+
 void testSingleValue_MultipleValueArguments_ShouldSucceed()
 {
     Argengine ae({ "test", "-a", "1", "-b", "2", "-c", "3" });
@@ -194,19 +240,17 @@ void testDefaultHelp_ClearHelpText_ShouldSucceed()
 
 void testUnknownArgumentBehavior_SetIgnore_ShouldIgnore()
 {
-    Argengine ae({ "test", "--foo" });
+    Argengine ae({ "test", "--foo1" });
     std::string error;
     ae.addArgument({ "--bar" }, [] {
     });
-    ae.parse();
-
     ae.setUnknownArgumentBehavior(Argengine::UnknownArgumentBehavior::Ignore);
     ae.parse();
 }
 
 void testUnknownArgumentBehavior_SetThrow_ShouldThrow()
 {
-    Argengine ae({ "test", "--foo" });
+    Argengine ae({ "test", "--foo2" });
     ae.addArgument({ "--bar" }, [] {
     });
 
@@ -222,11 +266,24 @@ void testUnknownArgumentBehavior_SetThrow_ShouldThrow()
 
 void testUnknownArgumentBehavior_SetWarn_ShouldWarn()
 {
-    Argengine ae({ "test", "--foo" });
+    Argengine ae({ "test", "--foo3" });
     ae.addArgument({ "--bar" }, [] {
     });
 
     ae.setUnknownArgumentBehavior(Argengine::UnknownArgumentBehavior::Warn);
+    std::stringstream ss;
+    ae.setErrorStream(ss);
+    ae.parse();
+
+    assert(ss.str() == "Uknown argument '" + ae.arguments().at(1) + "'!\n");
+}
+
+void testUnknownArgumentBehavior_DefaultIsWarn_ShouldWarn()
+{
+    Argengine ae({ "test", "--foo4" });
+    ae.addArgument({ "--bar" }, [] {
+    });
+
     std::stringstream ss;
     ae.setErrorStream(ss);
     ae.parse();
@@ -248,6 +305,12 @@ int main(int, char **)
 
     testSingleValue_MultipleValueArguments_ShouldSucceed();
 
+    testSingleValue_NoValueGivenWithAssignment_ShouldFail();
+
+    testSingleValue_ValueGivenWithAssignment_ShouldSucceed();
+
+    testSingleValue_MultipleValuesGivenWithAssignments_ShouldSucceed();
+
     testMixedArguments_MultipleArguments_ShouldSucceed();
 
     testDefaultHelpOverride_HelpActive_ShouldFail();
@@ -263,6 +326,8 @@ int main(int, char **)
     testUnknownArgumentBehavior_SetThrow_ShouldThrow();
 
     testUnknownArgumentBehavior_SetWarn_ShouldWarn();
+
+    testUnknownArgumentBehavior_DefaultIsWarn_ShouldWarn();
 
     return EXIT_SUCCESS;
 }

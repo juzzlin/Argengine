@@ -38,7 +38,7 @@ class Argengine
 public:
 
     //! Constructor.
-    Argengine(int argc, char **argv, bool addDefaultHelp = true);
+    Argengine(int argc, char ** argv, bool addDefaultHelp = true);
 
     //! Constructor.
     //! \param args The arguments as a vector of strings. It is assumed, that the first element is the name of the executed application.
@@ -76,7 +76,7 @@ public:
         Warn
     };
 
-    //! Set behavior for unknown arguments. Default is Ignore.
+    //! Set behavior for unknown arguments. Default is Warn.
     void setUnknownArgumentBehavior(UnknownArgumentBehavior behavior);
 
     //! Set custom output stream. Default is std::cout.

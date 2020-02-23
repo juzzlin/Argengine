@@ -109,22 +109,32 @@ public:
                 if (match->valuelessCallback) {
                     match->valuelessCallback();
                 } else if (match->singleStringCallback) {
-                    if (i + 1 < m_args.size()) {
-                        match->singleStringCallback(m_args.at(i + 1));
+                    if (++i < m_args.size()) {
+                        match->singleStringCallback(m_args.at(i));
                     } else {
                         throwNoValueError(*match);
                     }
                 }
             } else {
-                const auto warning = "Uknown argument '" + arg + "'!";
-                switch (m_unknownArgumentBehavior) {
-                case UnknownArgumentBehavior::Ignore:
-                    break;
-                case UnknownArgumentBehavior::Throw:
-                    throw std::runtime_error(warning);
-                case UnknownArgumentBehavior::Warn:
-                    *m_err << warning << std::endl;
-                    break;
+                // Try to reason out 'ARG=VALUE'
+                bool assignmentFormat = false;
+                const auto pos = arg.find_first_of('=');
+                if (pos != arg.npos) {
+                    const auto startsWith = arg.substr(0, pos);
+                    const auto match = getArgumentDefinition(startsWith);
+                    if (match && match->singleStringCallback) {
+                        const auto valueLength = arg.size() - (pos + 1);
+                        if (!valueLength) {
+                            throwNoValueError(*match);
+                        }
+                        const auto value = arg.substr(pos + 1, valueLength);
+                        match->singleStringCallback(value);
+                        assignmentFormat = true;
+                    }
+                }
+
+                if (!assignmentFormat) {
+                    handleUnknownArgument(arg);
                 }
             }
         }
@@ -221,6 +231,20 @@ private:
         return getArgumentDefinition(ArgumentVariants { argument });
     }
 
+    void handleUnknownArgument(std::string arg)
+    {
+        const auto warning = "Uknown argument '" + arg + "'!";
+        switch (m_unknownArgumentBehavior) {
+        case UnknownArgumentBehavior::Ignore:
+            break;
+        case UnknownArgumentBehavior::Throw:
+            throw std::runtime_error(warning);
+        case UnknownArgumentBehavior::Warn:
+            *m_err << warning << std::endl;
+            break;
+        }
+    }
+
     [[noreturn]] void throwArgumentExistingError(const ArgumentDefinition & existing)
     {
         throw std::runtime_error("Argument '" + existing.getVariantsString() + "' already defined!");
@@ -237,7 +261,7 @@ private:
 
     std::vector<ArgumentDefinitionPtr> m_argumentDefinitions;
 
-    UnknownArgumentBehavior m_unknownArgumentBehavior = UnknownArgumentBehavior::Ignore;
+    UnknownArgumentBehavior m_unknownArgumentBehavior = UnknownArgumentBehavior::Warn;
 
     MultiStringCallback m_positionalArgumentCallback = nullptr;
 
