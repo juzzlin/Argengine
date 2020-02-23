@@ -1,7 +1,7 @@
 set(ARGENGINE_DIR ${CMAKE_SOURCE_DIR}/src)
 include_directories(${ARGENGINE} ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(NAME basic_test)
+set(NAME single_value_test)
 set(SRC ${NAME}.cpp)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/tests)

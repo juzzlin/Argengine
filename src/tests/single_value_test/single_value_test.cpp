@@ -33,48 +33,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <map>
-#include <sstream>
 
 using juzzlin::Argengine;
-
-void testValueless_CallbackCalled_ShouldFail()
-{
-    Argengine ae({ "test" });
-    bool triggered {};
-    ae.addArgument({ "-f", "--foo" }, [&] {
-        triggered = true;
-    });
-    ae.parse();
-
-    assert(!triggered);
-}
-
-void testValueless_CallbackCalled_ShouldSucceed()
-{
-    Argengine ae({ "test", "-f" });
-    bool triggered {};
-    ae.addArgument({ "-f", "--foo" }, [&] {
-        triggered = true;
-    });
-    ae.parse();
-
-    assert(triggered);
-}
-
-void testValueless_MultipleCallbacksCalled_ShouldSucceed()
-{
-    Argengine ae({ "test", "-a", "--bbb", "--aaa", "-a", "-b" });
-    std::map<std::string, size_t> triggered;
-    ae.addArgument({ "-a", "--aaa" }, [&] {
-        triggered["a"]++;
-    });
-    ae.addArgument({ "-b", "--bbb" }, [&] {
-        triggered["b"]++;
-    });
-    ae.parse();
-    assert(triggered["a"] == 3);
-    assert(triggered["b"] == 2);
-}
 
 void testSingleValue_NoValueGiven_ShouldFail()
 {
@@ -191,114 +151,8 @@ void testMixedArguments_MultipleArguments_ShouldSucceed()
     assert(values["c"] == "3");
 }
 
-void testDefaultHelpOverride_HelpActive_ShouldFail()
-{
-    Argengine ae({ "test" });
-    std::string error;
-    try {
-        ae.addArgument({ "-h" }, [&] {
-        });
-    } catch (std::runtime_error & e) {
-        error = e.what();
-    }
-    assert(error == "Argument '-h, --help' already defined!");
-}
-
-void testDefaultHelpOverride_HelpNotActive_ShouldSucceed()
-{
-    Argengine ae({ "test" }, false);
-    std::string error;
-    try {
-        ae.addArgument({ "-h" }, [&] {
-        });
-    } catch (std::runtime_error & e) {
-        error = e.what();
-    }
-    assert(error == "");
-}
-
-void testDefaultHelp_PrintToStream_ShouldSucceed()
-{
-    Argengine ae({ "test" });
-    std::stringstream ss;
-    ae.setOutputStream(ss);
-    ae.printHelp();
-
-    assert(ss.str() == "Usage: " + ae.arguments().at(0) + " [OPTIONS]\n\nOptions:\n\n");
-}
-
-void testDefaultHelp_ClearHelpText_ShouldSucceed()
-{
-    Argengine ae({ "test" });
-    std::stringstream ss;
-    ae.setOutputStream(ss);
-    ae.setHelpText("");
-    ae.printHelp();
-
-    assert(ss.str() == "Options:\n\n");
-}
-
-void testUnknownArgumentBehavior_SetIgnore_ShouldIgnore()
-{
-    Argengine ae({ "test", "--foo1" });
-    std::string error;
-    ae.addArgument({ "--bar" }, [] {
-    });
-    ae.setUnknownArgumentBehavior(Argengine::UnknownArgumentBehavior::Ignore);
-    ae.parse();
-}
-
-void testUnknownArgumentBehavior_SetThrow_ShouldThrow()
-{
-    Argengine ae({ "test", "--foo2" });
-    ae.addArgument({ "--bar" }, [] {
-    });
-
-    ae.setUnknownArgumentBehavior(Argengine::UnknownArgumentBehavior::Throw);
-    std::string error;
-    try {
-        ae.parse();
-    } catch (std::runtime_error & e) {
-        error = e.what();
-    }
-    assert(error == "Uknown argument '" + ae.arguments().at(1) + "'!");
-}
-
-void testUnknownArgumentBehavior_SetWarn_ShouldWarn()
-{
-    Argengine ae({ "test", "--foo3" });
-    ae.addArgument({ "--bar" }, [] {
-    });
-
-    ae.setUnknownArgumentBehavior(Argengine::UnknownArgumentBehavior::Warn);
-    std::stringstream ss;
-    ae.setErrorStream(ss);
-    ae.parse();
-
-    assert(ss.str() == "Uknown argument '" + ae.arguments().at(1) + "'!\n");
-}
-
-void testUnknownArgumentBehavior_DefaultIsWarn_ShouldWarn()
-{
-    Argengine ae({ "test", "--foo4" });
-    ae.addArgument({ "--bar" }, [] {
-    });
-
-    std::stringstream ss;
-    ae.setErrorStream(ss);
-    ae.parse();
-
-    assert(ss.str() == "Uknown argument '" + ae.arguments().at(1) + "'!\n");
-}
-
 int main(int, char **)
 {
-    testValueless_CallbackCalled_ShouldFail();
-
-    testValueless_CallbackCalled_ShouldSucceed();
-
-    testValueless_MultipleCallbacksCalled_ShouldSucceed();
-
     testSingleValue_NoValueGiven_ShouldFail();
 
     testSingleValue_ValueGiven_ShouldSucceed();
@@ -312,22 +166,6 @@ int main(int, char **)
     testSingleValue_MultipleValuesGivenWithAssignments_ShouldSucceed();
 
     testMixedArguments_MultipleArguments_ShouldSucceed();
-
-    testDefaultHelpOverride_HelpActive_ShouldFail();
-
-    testDefaultHelpOverride_HelpNotActive_ShouldSucceed();
-
-    testDefaultHelp_PrintToStream_ShouldSucceed();
-
-    testDefaultHelp_ClearHelpText_ShouldSucceed();
-
-    testUnknownArgumentBehavior_SetIgnore_ShouldIgnore();
-
-    testUnknownArgumentBehavior_SetThrow_ShouldThrow();
-
-    testUnknownArgumentBehavior_SetWarn_ShouldWarn();
-
-    testUnknownArgumentBehavior_DefaultIsWarn_ShouldWarn();
 
     return EXIT_SUCCESS;
 }

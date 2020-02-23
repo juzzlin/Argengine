@@ -1,0 +1,103 @@
+// MIT License
+//
+// Copyright (c) 2020 Jussi Lind <jussi.lind@iki.fi>
+//
+// https://github.com/juzzlin/Argengine
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+#include "argengine.hpp"
+
+// Don't compile asserts away
+#ifdef NDEBUG
+    #undef NDEBUG
+#endif
+
+#include <cassert>
+#include <cstdlib>
+#include <iostream>
+#include <sstream>
+
+using juzzlin::Argengine;
+
+void testUnknownArgumentBehavior_SetIgnore_ShouldIgnore()
+{
+    Argengine ae({ "test", "--foo1" });
+    std::string error;
+    ae.addArgument({ "--bar" }, [] {
+    });
+    ae.setUnknownArgumentBehavior(Argengine::UnknownArgumentBehavior::Ignore);
+    ae.parse();
+}
+
+void testUnknownArgumentBehavior_SetThrow_ShouldThrow()
+{
+    Argengine ae({ "test", "--foo2" });
+    ae.addArgument({ "--bar" }, [] {
+    });
+
+    ae.setUnknownArgumentBehavior(Argengine::UnknownArgumentBehavior::Throw);
+    std::string error;
+    try {
+        ae.parse();
+    } catch (std::runtime_error & e) {
+        error = e.what();
+    }
+    assert(error == "Uknown argument '" + ae.arguments().at(1) + "'!");
+}
+
+void testUnknownArgumentBehavior_SetWarn_ShouldWarn()
+{
+    Argengine ae({ "test", "--foo3" });
+    ae.addArgument({ "--bar" }, [] {
+    });
+
+    ae.setUnknownArgumentBehavior(Argengine::UnknownArgumentBehavior::Warn);
+    std::stringstream ss;
+    ae.setErrorStream(ss);
+    ae.parse();
+
+    assert(ss.str() == "Uknown argument '" + ae.arguments().at(1) + "'!\n");
+}
+
+void testUnknownArgumentBehavior_DefaultIsWarn_ShouldWarn()
+{
+    Argengine ae({ "test", "--foo4" });
+    ae.addArgument({ "--bar" }, [] {
+    });
+
+    std::stringstream ss;
+    ae.setErrorStream(ss);
+    ae.parse();
+
+    assert(ss.str() == "Uknown argument '" + ae.arguments().at(1) + "'!\n");
+}
+
+int main(int, char **)
+{
+    testUnknownArgumentBehavior_SetIgnore_ShouldIgnore();
+
+    testUnknownArgumentBehavior_SetThrow_ShouldThrow();
+
+    testUnknownArgumentBehavior_SetWarn_ShouldWarn();
+
+    testUnknownArgumentBehavior_DefaultIsWarn_ShouldWarn();
+
+    return EXIT_SUCCESS;
+}
