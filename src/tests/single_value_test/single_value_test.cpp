@@ -133,6 +133,46 @@ void testSingleValue_MultipleValueArguments_ShouldSucceed()
     assert(values["c"] == "3");
 }
 
+void testSingleValue_RequiredButNotGiven_ShouldFail()
+{
+    Argengine ae({ "test" });
+    ae.addArgument(
+      { "-f", "--foo" }, [](std::string) {
+      },
+      true);
+
+    std::string error;
+    try {
+        ae.parse();
+    } catch (std::runtime_error & e) {
+        error = e.what();
+    }
+
+    assert(error == name + ": Argument '-f, --foo' is required!");
+}
+
+void testSingleValue_RequiredAndGiven_ShouldSucceed()
+{
+    Argengine ae({ "test", "--foo", "42", "--bar=666" });
+    std::string fooValue;
+    ae.addArgument(
+      { "-f", "--foo" }, [&](std::string value) {
+          fooValue = value;
+      },
+      true);
+    std::string barValue;
+    ae.addArgument(
+      { "-b", "--bar" }, [&](std::string value) {
+          barValue = value;
+      },
+      true);
+
+    ae.parse();
+
+    assert(fooValue == "42");
+    assert(barValue == "666");
+}
+
 void testMixedArguments_MultipleArguments_ShouldSucceed()
 {
     Argengine ae({ "test", "-a", "1", "--bbb", "-c", "3" });
@@ -166,6 +206,10 @@ int main(int, char **)
     testSingleValue_ValueGivenWithAssignment_ShouldSucceed();
 
     testSingleValue_MultipleValuesGivenWithAssignments_ShouldSucceed();
+
+    testSingleValue_RequiredButNotGiven_ShouldFail();
+
+    testSingleValue_RequiredAndGiven_ShouldSucceed();
 
     testMixedArguments_MultipleArguments_ShouldSucceed();
 

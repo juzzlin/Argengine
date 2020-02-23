@@ -91,6 +91,22 @@ void testUnknownArgumentBehavior_DefaultIsWarn_ShouldWarn()
     assert(ss.str() == name + ": Uknown argument '" + ae.arguments().at(1) + "'!\n");
 }
 
+void testUnknownArgument_SingleValueAssignment_ShouldThrow()
+{
+    Argengine ae({ "test", "--foo=42" });
+    ae.addArgument({ "--bar" }, [](std::string) {
+    });
+
+    ae.setUnknownArgumentBehavior(Argengine::UnknownArgumentBehavior::Throw);
+    std::string error;
+    try {
+        ae.parse();
+    } catch (std::runtime_error & e) {
+        error = e.what();
+    }
+    assert(error == name + ": Uknown argument '--foo'!");
+}
+
 int main(int, char **)
 {
     testUnknownArgumentBehavior_SetIgnore_ShouldIgnore();
@@ -100,6 +116,8 @@ int main(int, char **)
     testUnknownArgumentBehavior_SetWarn_ShouldWarn();
 
     testUnknownArgumentBehavior_DefaultIsWarn_ShouldWarn();
+
+    testUnknownArgument_SingleValueAssignment_ShouldThrow();
 
     return EXIT_SUCCESS;
 }

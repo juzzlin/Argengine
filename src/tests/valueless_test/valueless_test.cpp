@@ -36,6 +36,8 @@
 
 using juzzlin::Argengine;
 
+const std::string name = "Argengine";
+
 void testValueless_CallbackCalled_ShouldFail()
 {
     Argengine ae({ "test" });
@@ -75,6 +77,39 @@ void testValueless_MultipleCallbacksCalled_ShouldSucceed()
     assert(triggered["b"] == 2);
 }
 
+void testValueless_RequiredButNotGiven_ShouldFail()
+{
+    Argengine ae({ "test" });
+    ae.addArgument(
+      { "-f", "--foo" }, [&] {
+      },
+      true);
+
+    std::string error;
+    try {
+        ae.parse();
+    } catch (std::runtime_error & e) {
+        error = e.what();
+    }
+
+    assert(error == name + ": Argument '-f, --foo' is required!");
+}
+
+void testValueless_RequiredAndGiven_ShouldSucceed()
+{
+    Argengine ae({ "test", "--foo" });
+    bool triggered {};
+    ae.addArgument(
+      { "-f", "--foo" }, [&] {
+          triggered = true;
+      },
+      true);
+
+    ae.parse();
+
+    assert(triggered);
+}
+
 int main(int, char **)
 {
     testValueless_CallbackCalled_ShouldFail();
@@ -82,6 +117,10 @@ int main(int, char **)
     testValueless_CallbackCalled_ShouldSucceed();
 
     testValueless_MultipleCallbacksCalled_ShouldSucceed();
+
+    testValueless_RequiredButNotGiven_ShouldFail();
+
+    testValueless_RequiredAndGiven_ShouldSucceed();
 
     return EXIT_SUCCESS;
 }

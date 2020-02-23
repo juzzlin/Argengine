@@ -108,9 +108,11 @@ public:
             if (const auto match = getArgumentDefinition(arg)) {
                 if (match->valuelessCallback) {
                     match->valuelessCallback();
+                    match->applied = true;
                 } else if (match->singleStringCallback) {
                     if (++i < m_args.size()) {
                         match->singleStringCallback(m_args.at(i));
+                        match->applied = true;
                     } else {
                         throwNoValueError(*match);
                     }
@@ -118,10 +120,11 @@ public:
             } else {
                 // Try to reason out 'ARG=VALUE'
                 bool assignmentFormat {};
+                auto parsedArg = arg;
                 const auto pos = arg.find_first_of('=');
                 if (pos != arg.npos) {
-                    const auto startsWith = arg.substr(0, pos);
-                    const auto match = getArgumentDefinition(startsWith);
+                    parsedArg = arg.substr(0, pos);
+                    const auto match = getArgumentDefinition(parsedArg);
                     if (match && match->singleStringCallback) {
                         const auto valueLength = arg.size() - (pos + 1);
                         if (!valueLength) {
@@ -129,15 +132,18 @@ public:
                         }
                         const auto value = arg.substr(pos + 1, valueLength);
                         match->singleStringCallback(value);
+                        match->applied = true;
                         assignmentFormat = true;
                     }
                 }
 
                 if (!assignmentFormat) {
-                    handleUnknownArgument(arg);
+                    handleUnknownArgument(parsedArg);
                 }
             }
         }
+
+        checkRequired();
     }
 
     void setUnknownArgumentBehavior(UnknownArgumentBehavior behavior)
@@ -199,6 +205,8 @@ private:
 
         bool required = false;
 
+        bool applied = false;
+
         std::string infoText;
     };
 
@@ -214,8 +222,16 @@ private:
           false, "Show this help.");
     }
 
-    using ArgumentDefinitionPtr = std::shared_ptr<ArgumentDefinition>;
+    void checkRequired()
+    {
+        for (auto && definition : m_argumentDefinitions) {
+            if (definition->required && !definition->applied) {
+                throwRequiredError(*definition);
+            }
+        }
+    }
 
+    using ArgumentDefinitionPtr = std::shared_ptr<ArgumentDefinition>;
     ArgumentDefinitionPtr getArgumentDefinition(ArgumentVariants variants) const
     {
         for (auto && definition : m_argumentDefinitions) {
@@ -253,6 +269,11 @@ private:
     [[noreturn]] void throwArgumentExistingError(const ArgumentDefinition & existing)
     {
         throw std::runtime_error(name() + ": Argument '" + existing.getVariantsString() + "' already defined!");
+    }
+
+    [[noreturn]] void throwRequiredError(const ArgumentDefinition & existing)
+    {
+        throw std::runtime_error(name() + ": Argument '" + existing.getVariantsString() + "' is required!");
     }
 
     [[noreturn]] void throwNoValueError(const ArgumentDefinition & existing)
