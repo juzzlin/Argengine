@@ -115,6 +115,12 @@ int main(int argc, char ** argv)
 }
 ```
 
+## Handling unknown arguments
+
+For the handling of unknown arguments there are three modes: `Ignore`, `Warn`, and `Throw`. The default is `Warn`.
+
+This can be selected with `Argengine::setUnknownArgumentBehavior(UnknownArgumentBehavior behavior)`.
+
 # Requirements
 
 C++11
