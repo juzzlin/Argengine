@@ -40,7 +40,7 @@ using juzzlin::Argengine;
 void testValueless_CallbackCalled_ShouldFail()
 {
     Argengine ae({ "test" });
-    bool triggered = false;
+    bool triggered {};
     ae.addArgument({ "-f", "--foo" }, [&] {
         triggered = true;
     });
@@ -52,7 +52,7 @@ void testValueless_CallbackCalled_ShouldFail()
 void testValueless_CallbackCalled_ShouldSucceed()
 {
     Argengine ae({ "test", "-f" });
-    bool triggered = false;
+    bool triggered {};
     ae.addArgument({ "-f", "--foo" }, [&] {
         triggered = true;
     });
@@ -79,7 +79,7 @@ void testValueless_MultipleCallbacksCalled_ShouldSucceed()
 void testSingleValue_NoValueGiven_ShouldFail()
 {
     Argengine ae({ "test", "-f" });
-    bool called = false;
+    bool called {};
     ae.addArgument({ "-f" }, [&](std::string) {
         called = true;
     });
@@ -120,7 +120,7 @@ void testSingleValue_ValueGivenWithAssignment_ShouldSucceed()
 void testSingleValue_NoValueGivenWithAssignment_ShouldFail()
 {
     Argengine ae({ "test", "f=" });
-    bool called = false;
+    bool called {};
     ae.addArgument({ "f" }, [&](std::string) {
         called = true;
     });

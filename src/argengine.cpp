@@ -117,7 +117,7 @@ public:
                 }
             } else {
                 // Try to reason out 'ARG=VALUE'
-                bool assignmentFormat = false;
+                bool assignmentFormat {};
                 const auto pos = arg.find_first_of('=');
                 if (pos != arg.npos) {
                     const auto startsWith = arg.substr(0, pos);

@@ -97,12 +97,12 @@ int main(int argc, char ** argv)
     using juzzlin::Argengine;
     Argengine ae(argc, argv);
 
-    bool fooSet = false;
+    bool fooSet {};
     ae.addArgument({"-f", "--foo"}, [&] {
         fooSet = true;
     });
 
-    bool barSet = false;
+    bool barSet {};
     ae.addArgument({"--bar"}, [&] {
         barSet = true;
     });
