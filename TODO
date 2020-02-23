@@ -2,9 +2,6 @@
 - Positional with "--"
 - Documentation placeholders
 - Version
-- Support value switches without space separation
-  - If not ambiguous!
-- Support value switches with =
 - Option to print help on unknown argument
 - Required argument prints info when not present
 
