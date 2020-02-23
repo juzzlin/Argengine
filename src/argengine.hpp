@@ -36,6 +36,12 @@ namespace juzzlin {
 class Argengine
 {
 public:
+    enum class UnknownArgumentBehavior
+    {
+        Ignore,
+        Throw,
+        Warn
+    };
 
     //! Constructor.
     Argengine(int argc, char ** argv, bool addDefaultHelp = true);
@@ -80,13 +86,6 @@ public:
 
     //! Set handler for positional arguments.
     void setPositionalArgumentCallback(MultiStringCallback callback);
-
-    enum class UnknownArgumentBehavior
-    {
-        Ignore,
-        Throw,
-        Warn
-    };
 
     //! Set behavior for unknown arguments. Default is Warn.
     void setUnknownArgumentBehavior(UnknownArgumentBehavior behavior);
