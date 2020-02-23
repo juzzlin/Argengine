@@ -105,6 +105,46 @@ void testSingleValue_ValueGiven_ShouldSucceed()
     assert(f == ae.arguments().at(2));
 }
 
+void testSingleValue_MultipleValueArguments_ShouldSucceed()
+{
+    Argengine ae({ "test", "-a", "1", "-b", "2", "-c", "3" });
+    std::map<std::string, std::string> values;
+    ae.addArgument({ "-a" }, [&](std::string value) {
+        values["a"] = value;
+    });
+    ae.addArgument({ "-b" }, [&](std::string value) {
+        values["b"] = value;
+    });
+    ae.addArgument({ "-c" }, [&](std::string value) {
+        values["c"] = value;
+    });
+    std::string error;
+    ae.parse();
+    assert(values["a"] == "1");
+    assert(values["b"] == "2");
+    assert(values["c"] == "3");
+}
+
+void testMixedArguments_MultipleArguments_ShouldSucceed()
+{
+    Argengine ae({ "test", "-a", "1", "--bbb", "-c", "3" });
+    std::map<std::string, std::string> values;
+    ae.addArgument({ "-a" }, [&](std::string value) {
+        values["a"] = value;
+    });
+    ae.addArgument({ "--bbb" }, [&] {
+        values["bbb"] = "called";
+    });
+    ae.addArgument({ "-c" }, [&](std::string value) {
+        values["c"] = value;
+    });
+    std::string error;
+    ae.parse();
+    assert(values["a"] == "1");
+    assert(values["bbb"] == "called");
+    assert(values["c"] == "3");
+}
+
 void testDefaultHelpOverride_HelpActive_ShouldFail()
 {
     Argengine ae({ "test" });
@@ -205,6 +245,10 @@ int main(int, char **)
     testSingleValue_NoValueGiven_ShouldFail();
 
     testSingleValue_ValueGiven_ShouldSucceed();
+
+    testSingleValue_MultipleValueArguments_ShouldSucceed();
+
+    testMixedArguments_MultipleArguments_ShouldSucceed();
 
     testDefaultHelpOverride_HelpActive_ShouldFail();
 
