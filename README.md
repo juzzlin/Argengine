@@ -13,10 +13,11 @@ Looking for a simple CLI argument parser for your C++ project? `Argengine` might
 * Single .hpp/.cpp
 * Very easy to use
 
-# Design choices
+# Design Choices
 
-* The PIMPL idiom is used to maintain API/ABI compatibility
+* Argument values are passed as strings. The client is responsible for possible data conversions.
 * Most of the data is passed by value for a cleaner API. It is assumed that argument parsing is not the performance bottleneck of your application
+* The PIMPL idiom is used to maintain API/ABI compatibility
 
 # Installation
 
