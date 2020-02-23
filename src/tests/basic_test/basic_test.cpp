@@ -32,6 +32,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
+#include <map>
 #include <sstream>
 
 using juzzlin::Argengine;
@@ -58,6 +59,21 @@ void testValueless_CallbackCalled_ShouldSucceed()
     ae.parse();
 
     assert(triggered);
+}
+
+void testValueless_MultipleCallbacksCalled_ShouldSucceed()
+{
+    Argengine ae({ "test", "-a", "--bbb", "--aaa", "-a", "-b" });
+    std::map<std::string, size_t> triggered;
+    ae.addArgument({ "-a", "--aaa" }, [&] {
+        triggered["a"]++;
+    });
+    ae.addArgument({ "-b", "--bbb" }, [&] {
+        triggered["b"]++;
+    });
+    ae.parse();
+    assert(triggered["a"] == 3);
+    assert(triggered["b"] == 2);
 }
 
 void testSingleValue_NoValueGiven_ShouldFail()
@@ -183,6 +199,8 @@ int main(int, char **)
     testValueless_CallbackCalled_ShouldFail();
 
     testValueless_CallbackCalled_ShouldSucceed();
+
+    testValueless_MultipleCallbacksCalled_ShouldSucceed();
 
     testSingleValue_NoValueGiven_ShouldFail();
 
