@@ -150,9 +150,9 @@ int main(int argc, char ** argv)
 
 Single value arguments are arguments that can have only one value.
 
-The following formats are allowed: `-f 42`, `--foo=42`, `a=1`..
+As an example, for argument `-f` The following formats are allowed: `-f 42`, `-f42`, `-f=42`.
 
-So, there must be either space or '`=`'.
+Preferably there should be either space or '`=`'. The spaceless format is accepted if not ambiguous.
 
 The lambda callback is of the form `[] (std::string value) {}`.
 

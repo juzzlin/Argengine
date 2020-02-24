@@ -105,6 +105,7 @@ public:
     {
         for (size_t i = 1; i < m_args.size(); i++) {
             const auto arg = m_args.at(i);
+            // Try to reason out 'ARG' or 'ARG VALUE'
             if (const auto match = getArgumentDefinition(arg)) {
                 if (match->valuelessCallback) {
                     match->valuelessCallback();
@@ -119,12 +120,12 @@ public:
                 }
             } else {
                 // Try to reason out 'ARG=VALUE'
-                bool assignmentFormat {};
-                auto parsedArg = arg;
+                bool assignmentFormatSucceeded {};
+                std::string assignmentFormatArg;
                 const auto pos = arg.find_first_of('=');
                 if (pos != arg.npos) {
-                    parsedArg = arg.substr(0, pos);
-                    const auto match = getArgumentDefinition(parsedArg);
+                    assignmentFormatArg = arg.substr(0, pos);
+                    const auto match = getArgumentDefinition(assignmentFormatArg);
                     if (match && match->singleStringCallback) {
                         const auto valueLength = arg.size() - (pos + 1);
                         if (!valueLength) {
@@ -133,12 +134,46 @@ public:
                         const auto value = arg.substr(pos + 1, valueLength);
                         match->singleStringCallback(value);
                         match->applied = true;
-                        assignmentFormat = true;
+                        assignmentFormatSucceeded = true;
                     }
                 }
 
-                if (!assignmentFormat) {
-                    handleUnknownArgument(parsedArg);
+                if (!assignmentFormatSucceeded) {
+                    if (!assignmentFormatArg.empty()) {
+                        handleUnknownArgument(assignmentFormatArg);
+                    } else {
+                        // Try to reason out 'ARGVALUE'
+                        bool spacelessFormatSucceeded {};
+                        std::map<ArgumentDefinitionPtr, std::string> matchingDefinitions;
+                        for (auto && definition : m_argumentDefinitions) {
+                            for (auto && variant : definition->variants) {
+                                if (arg.find(variant) == 0) {
+                                    matchingDefinitions[definition] = variant;
+                                }
+                            }
+                        }
+
+                        if (matchingDefinitions.size() == 1) {
+                            const auto match = matchingDefinitions.begin()->first;
+                            if (match && match->singleStringCallback) {
+                                const auto pos = matchingDefinitions.begin()->second.size();
+                                const auto valueLength = arg.size() - pos;
+                                if (!valueLength) {
+                                    throwNoValueError(*match);
+                                }
+                                const auto value = arg.substr(pos, valueLength);
+                                match->singleStringCallback(value);
+                                match->applied = true;
+                                spacelessFormatSucceeded = true;
+                            }
+                        } else if (matchingDefinitions.size() > 1) {
+                            throwAmbiguousArgumentError(arg, matchingDefinitions);
+                        }
+
+                        if (!spacelessFormatSucceeded) {
+                            handleUnknownArgument(arg);
+                        }
+                    }
                 }
             }
         }
@@ -264,6 +299,20 @@ private:
     std::string name() const
     {
         return "Argengine";
+    }
+
+    [[noreturn]] void throwAmbiguousArgumentError(std::string argument, std::map<ArgumentDefinitionPtr, std::string> matchingDefinitions)
+    {
+        std::string ambiguos;
+        size_t count = 0;
+        for (auto iter : matchingDefinitions) {
+            ambiguos += "'" + iter.second + "'";
+            if (++count < matchingDefinitions.size()) {
+                ambiguos += ", ";
+            }
+        }
+
+        throw std::runtime_error(name() + ": Argument '" + argument + "' is ambiguos due to arguments: " + ambiguos);
     }
 
     [[noreturn]] void throwArgumentExistingError(const ArgumentDefinition & existing)

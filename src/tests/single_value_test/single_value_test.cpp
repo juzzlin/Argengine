@@ -69,14 +69,18 @@ void testSingleValue_ValueGiven_ShouldSucceed()
 
 void testSingleValue_ValueGivenWithAssignment_ShouldSucceed()
 {
-    Argengine ae({ "test", "f=42" });
-    std::string f;
+    Argengine ae({ "test", "f=42", "g==" });
+    std::string f, g;
     ae.addArgument({ "f" }, [&](std::string value) {
         f = value;
+    });
+    ae.addArgument({ "g" }, [&](std::string value) {
+        g = value;
     });
     std::string error;
     ae.parse();
     assert(f == "42");
+    assert(g == "=");
 }
 
 void testSingleValue_NoValueGivenWithAssignment_ShouldFail()
@@ -111,6 +115,60 @@ void testSingleValue_MultipleValuesGivenWithAssignments_ShouldSucceed()
     });
     std::string error;
     ae.parse();
+
+    assert(values["a"] == "1");
+    assert(values["bb"] == "22");
+    assert(values["ccc"] == "333");
+}
+
+void testSingleValue_NoValueGivenWithoutSpace_ShouldFail()
+{
+    Argengine ae({ "test", "f" });
+    bool called {};
+    ae.addArgument({ "f" }, [&](std::string) {
+        called = true;
+    });
+    std::string error;
+    try {
+        ae.parse();
+    } catch (std::runtime_error & e) {
+        error = e.what();
+    }
+    assert(!called);
+    assert(error == name + ": No value for argument 'f' given!");
+}
+
+void testSingleValue_ValueGivenWithoutSpace_ShouldSucceed()
+{
+    Argengine ae({ "test", "-o1" });
+    std::string o;
+    ae.addArgument({ "-o" }, [&](std::string value) {
+        o = value;
+    });
+    std::string error;
+    ae.parse();
+    assert(o == "1");
+}
+
+void testSingleValue_MultipleValuesGivenWithoutSpaces_ShouldSucceed()
+{
+    Argengine ae({ "test", "a1", "bb22", "ccc333" });
+    std::map<std::string, std::string> values;
+    ae.addArgument({ "a", "aa" }, [&](std::string value) {
+        values["a"] = value;
+    });
+    ae.addArgument({ "bb" }, [&](std::string value) {
+        values["bb"] = value;
+    });
+    ae.addArgument({ "ccc" }, [&](std::string value) {
+        values["ccc"] = value;
+    });
+    std::string error;
+    ae.parse();
+
+    assert(values["a"] == "1");
+    assert(values["bb"] == "22");
+    assert(values["ccc"] == "333");
 }
 
 void testSingleValue_MultipleValueArguments_ShouldSucceed()
@@ -175,7 +233,7 @@ void testSingleValue_RequiredAndGiven_ShouldSucceed()
 
 void testMixedArguments_MultipleArguments_ShouldSucceed()
 {
-    Argengine ae({ "test", "-a", "1", "--bbb", "-c", "3" });
+    Argengine ae({ "test", "-a", "1", "--bbb", "-c", "3", "-d444" });
     std::map<std::string, std::string> values;
     ae.addArgument({ "-a" }, [&](std::string value) {
         values["a"] = value;
@@ -186,11 +244,15 @@ void testMixedArguments_MultipleArguments_ShouldSucceed()
     ae.addArgument({ "-c" }, [&](std::string value) {
         values["c"] = value;
     });
+    ae.addArgument({ "-d" }, [&](std::string value) {
+        values["d"] = value;
+    });
     std::string error;
     ae.parse();
     assert(values["a"] == "1");
     assert(values["bbb"] == "called");
     assert(values["c"] == "3");
+    assert(values["d"] == "444");
 }
 
 int main(int, char **)
@@ -206,6 +268,12 @@ int main(int, char **)
     testSingleValue_ValueGivenWithAssignment_ShouldSucceed();
 
     testSingleValue_MultipleValuesGivenWithAssignments_ShouldSucceed();
+
+    testSingleValue_NoValueGivenWithoutSpace_ShouldFail();
+
+    testSingleValue_ValueGivenWithoutSpace_ShouldSucceed();
+
+    testSingleValue_MultipleValuesGivenWithoutSpaces_ShouldSucceed();
 
     testSingleValue_RequiredButNotGiven_ShouldFail();
 
