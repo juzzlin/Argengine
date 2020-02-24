@@ -1,7 +1,10 @@
 - Conflicts
-- Positional with "--"
 - Documentation placeholders
-- Version
+- Jenkinsfile
 - Option to print help on unknown argument
+- Positional with "--"
 - Required argument prints info when not present
+- Tests for multi-callbacks like -j4 and -j in GNU make
+- Version
+
 
