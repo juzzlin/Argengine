@@ -43,6 +43,12 @@ public:
         Warn
     };
 
+    enum class HelpSorting
+    {
+        None,
+        Ascending
+    };
+
     //! Constructor.
     Argengine(int argc, char ** argv, bool addDefaultHelp = true);
 
@@ -83,6 +89,10 @@ public:
     //! Set info text printed on help/usage before argument help.
     //! \param helpText Text shown in help. E.g. "MyApplication v1.0.0, Copyright (c) 2020 Foo Bar".
     void setHelpText(std::string helpText);
+
+    //! Set sorting style of arguments in help.
+    //! \param helpSorting The sorting direction enum. Default is HelpSorting::None.
+    void setHelpSorting(HelpSorting helpSorting);
 
     //! Set handler for positional arguments.
     void setPositionalArgumentCallback(MultiStringCallback callback);

@@ -24,6 +24,7 @@
 
 #include "argengine.hpp"
 
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <map>
@@ -85,6 +86,11 @@ public:
         m_helpText = helpText;
     }
 
+    void setHelpSorting(HelpSorting helpSorting)
+    {
+        m_helpSorting = helpSorting;
+    }
+
     void setPositionalArgumentCallback(MultiStringCallback callback)
     {
         m_positionalArgumentCallback = callback;
@@ -99,6 +105,29 @@ public:
 
         *m_out << "Options:" << std::endl
                << std::endl;
+
+        if (m_helpSorting == HelpSorting::Ascending) {
+            std::sort(m_argumentDefinitions.begin(), m_argumentDefinitions.end(), [](const ArgumentDefinitionPtr & l, const ArgumentDefinitionPtr & r) {
+                return l->getVariantsString() < r->getVariantsString();
+            });
+        }
+
+        std::vector<std::pair<std::string, std::string>> optionTexts;
+        size_t maxLength = 0;
+        for (auto && option : m_argumentDefinitions) {
+            const auto variantsString = option->getVariantsString();
+            maxLength = std::max(variantsString.size(), maxLength);
+            optionTexts.push_back({ variantsString, option->infoText });
+        }
+        const size_t margin = 2;
+        for (auto && optionText : optionTexts) {
+            *m_out << optionText.first;
+            for (size_t i = 0; i < maxLength + margin - optionText.first.size(); i++) {
+                *m_out << " ";
+            }
+            *m_out << optionText.second;
+        }
+        *m_out << std::endl;
     }
 
     void parse()
@@ -347,6 +376,8 @@ private:
 
     std::string m_helpText;
 
+    HelpSorting m_helpSorting = HelpSorting::None;
+
     std::vector<ArgumentDefinitionPtr> m_argumentDefinitions;
 
     UnknownArgumentBehavior m_unknownArgumentBehavior = UnknownArgumentBehavior::Warn;
@@ -406,6 +437,11 @@ Argengine::ArgumentVector Argengine::arguments() const
 void Argengine::setHelpText(std::string helpText)
 {
     m_impl->setHelpText(helpText);
+}
+
+void Argengine::setHelpSorting(HelpSorting helpSorting)
+{
+    m_impl->setHelpSorting(helpSorting);
 }
 
 void Argengine::setPositionalArgumentCallback(MultiStringCallback callback)
