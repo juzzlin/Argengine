@@ -107,74 +107,11 @@ public:
             const auto arg = m_args.at(i);
             // Try to reason out 'ARG' or 'ARG VALUE'
             if (const auto match = getArgumentDefinition(arg)) {
-                if (match->valuelessCallback) {
-                    match->valuelessCallback();
-                    match->applied = true;
-                } else if (match->singleStringCallback) {
-                    if (++i < m_args.size()) {
-                        match->singleStringCallback(m_args.at(i));
-                        match->applied = true;
-                    } else {
-                        throwNoValueError(*match);
-                    }
-                }
-            } else {
+                i = processTrivialMatch(match, i);
                 // Try to reason out 'ARG=VALUE'
-                bool assignmentFormatSucceeded {};
-                std::string assignmentFormatArg;
-                const auto pos = arg.find_first_of('=');
-                if (pos != arg.npos) {
-                    assignmentFormatArg = arg.substr(0, pos);
-                    const auto match = getArgumentDefinition(assignmentFormatArg);
-                    if (match && match->singleStringCallback) {
-                        const auto valueLength = arg.size() - (pos + 1);
-                        if (!valueLength) {
-                            throwNoValueError(*match);
-                        }
-                        const auto value = arg.substr(pos + 1, valueLength);
-                        match->singleStringCallback(value);
-                        match->applied = true;
-                        assignmentFormatSucceeded = true;
-                    }
-                }
-
-                if (!assignmentFormatSucceeded) {
-                    if (!assignmentFormatArg.empty()) {
-                        handleUnknownArgument(assignmentFormatArg);
-                    } else {
-                        // Try to reason out 'ARGVALUE'
-                        bool spacelessFormatSucceeded {};
-                        std::map<ArgumentDefinitionPtr, std::string> matchingDefinitions;
-                        for (auto && definition : m_argumentDefinitions) {
-                            for (auto && variant : definition->variants) {
-                                if (arg.find(variant) == 0) {
-                                    matchingDefinitions[definition] = variant;
-                                }
-                            }
-                        }
-
-                        if (matchingDefinitions.size() == 1) {
-                            const auto match = matchingDefinitions.begin()->first;
-                            if (match && match->singleStringCallback) {
-                                const auto pos = matchingDefinitions.begin()->second.size();
-                                const auto valueLength = arg.size() - pos;
-                                if (!valueLength) {
-                                    throwNoValueError(*match);
-                                }
-                                const auto value = arg.substr(pos, valueLength);
-                                match->singleStringCallback(value);
-                                match->applied = true;
-                                spacelessFormatSucceeded = true;
-                            }
-                        } else if (matchingDefinitions.size() > 1) {
-                            throwAmbiguousArgumentError(arg, matchingDefinitions);
-                        }
-
-                        if (!spacelessFormatSucceeded) {
-                            handleUnknownArgument(arg);
-                        }
-                    }
-                }
+            } else if (!tryProcessAssigmentFormat(arg)) {
+                // Try to reason out 'ARGVALUE'
+                tryProcessSpacelessFormat(arg);
             }
         }
 
@@ -299,6 +236,82 @@ private:
     std::string name() const
     {
         return "Argengine";
+    }
+
+    size_t processTrivialMatch(ArgumentDefinitionPtr match, size_t currentIndex)
+    {
+        if (match->valuelessCallback) {
+            match->valuelessCallback();
+            match->applied = true;
+        } else if (match->singleStringCallback) {
+            if (++currentIndex < m_args.size()) {
+                match->singleStringCallback(m_args.at(currentIndex));
+                match->applied = true;
+            } else {
+                throwNoValueError(*match);
+            }
+        }
+        return currentIndex;
+    }
+
+    bool tryProcessAssigmentFormat(std::string arg)
+    {
+        std::string assignmentFormatArg;
+        const auto pos = arg.find_first_of('=');
+        if (pos != arg.npos) {
+            assignmentFormatArg = arg.substr(0, pos);
+            const auto match = getArgumentDefinition(assignmentFormatArg);
+            if (match && match->singleStringCallback) {
+                const auto valueLength = arg.size() - (pos + 1);
+                if (!valueLength) {
+                    throwNoValueError(*match);
+                }
+                const auto value = arg.substr(pos + 1, valueLength);
+                match->singleStringCallback(value);
+                match->applied = true;
+                return true;
+            }
+        }
+
+        if (!assignmentFormatArg.empty()) {
+            handleUnknownArgument(assignmentFormatArg);
+        }
+
+        return false;
+    }
+
+    void tryProcessSpacelessFormat(std::string arg)
+    {
+        bool spacelessFormatSucceeded {};
+        std::map<ArgumentDefinitionPtr, std::string> matchingDefinitions;
+        for (auto && definition : m_argumentDefinitions) {
+            for (auto && variant : definition->variants) {
+                if (arg.find(variant) == 0) {
+                    matchingDefinitions[definition] = variant;
+                }
+            }
+        }
+
+        if (matchingDefinitions.size() == 1) {
+            const auto match = matchingDefinitions.begin()->first;
+            if (match && match->singleStringCallback) {
+                const auto pos = matchingDefinitions.begin()->second.size();
+                const auto valueLength = arg.size() - pos;
+                if (!valueLength) {
+                    throwNoValueError(*match);
+                }
+                const auto value = arg.substr(pos, valueLength);
+                match->singleStringCallback(value);
+                match->applied = true;
+                spacelessFormatSucceeded = true;
+            }
+        } else if (matchingDefinitions.size() > 1) {
+            throwAmbiguousArgumentError(arg, matchingDefinitions);
+        }
+
+        if (!spacelessFormatSucceeded) {
+            handleUnknownArgument(arg);
+        }
     }
 
     [[noreturn]] void throwAmbiguousArgumentError(std::string argument, std::map<ArgumentDefinitionPtr, std::string> matchingDefinitions)
