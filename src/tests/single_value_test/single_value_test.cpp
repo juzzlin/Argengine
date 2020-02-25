@@ -247,12 +247,26 @@ void testMixedArguments_MultipleArguments_ShouldSucceed()
     ae.addArgument({ "-d" }, [&](std::string value) {
         values["d"] = value;
     });
-    std::string error;
     ae.parse();
     assert(values["a"] == "1");
     assert(values["bbb"] == "called");
     assert(values["c"] == "3");
     assert(values["d"] == "444");
+}
+
+void testSameArgumentDefinedMultipleTimes_ShouldFail()
+{
+    Argengine ae({ "test", "-a", "1" });
+    std::string error;
+    try {
+        ae.addArgument({ "-a" }, [&](std::string) {
+        });
+        ae.addArgument({ "-a" }, [&] {
+        });
+    } catch (std::runtime_error & e) {
+        error = e.what();
+    }
+    assert(error == name + ": Argument '-a' already defined!");
 }
 
 int main(int, char **)
@@ -280,6 +294,8 @@ int main(int, char **)
     testSingleValue_RequiredAndGiven_ShouldSucceed();
 
     testMixedArguments_MultipleArguments_ShouldSucceed();
+
+    testSameArgumentDefinedMultipleTimes_ShouldFail();
 
     return EXIT_SUCCESS;
 }
