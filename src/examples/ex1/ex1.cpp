@@ -24,76 +24,31 @@
 
 #include "argengine.hpp"
 
-// Don't compile asserts away
-#ifdef NDEBUG
-    #undef NDEBUG
-#endif
-
-#include <cassert>
 #include <cstdlib>
 #include <iostream>
-#include <sstream>
 
 using juzzlin::Argengine;
 
-const std::string name = "Argengine";
-
-void testDefaultHelpOverride_HelpActive_ShouldFail()
+int main(int argc, char ** argv)
 {
-    Argengine ae({ "test" });
-    std::string error;
+    Argengine ae(argc, argv);
+    ae.addArgument({ "-a", "--arguments" }, [&] {
+        for (int i = 0; i < argc; i++) {
+            std::cout << argv[i] << std::endl;
+        }
+    });
+    ae.addArgument({ "-p" }, [](std::string value) {
+        std::cout << value.size() << std::endl;
+    });
+
     try {
-        ae.addArgument({ "-h" }, [&] {
-        });
-    } catch (std::runtime_error & e) {
-        error = e.what();
+        ae.parse();
+    } catch (const std::runtime_error & e) {
+        std::cerr << e.what() << std::endl
+                  << std::endl;
+        ae.printHelp();
+        return EXIT_FAILURE;
     }
-    assert(error == name + ": Argument '-h, --help' already defined!");
-}
-
-void testDefaultHelpOverride_HelpNotActive_ShouldSucceed()
-{
-    Argengine ae({ "test" }, false);
-    std::string error;
-    try {
-        ae.addArgument({ "-h" }, [&] {
-        });
-    } catch (std::runtime_error & e) {
-        error = e.what();
-    }
-    assert(error == "");
-}
-
-void testDefaultHelp_PrintToStream_ShouldSucceed()
-{
-    Argengine ae({ "test" });
-    std::stringstream ss;
-    ae.setOutputStream(ss);
-    ae.printHelp();
-
-    assert(ss.str() == "Usage: " + ae.arguments().at(0) + " [OPTIONS]\n\nOptions:\n\n");
-}
-
-void testDefaultHelp_ClearHelpText_ShouldSucceed()
-{
-    Argengine ae({ "test" });
-    std::stringstream ss;
-    ae.setOutputStream(ss);
-    ae.setHelpText("");
-    ae.printHelp();
-
-    assert(ss.str() == "Options:\n\n");
-}
-
-int main(int, char **)
-{
-    testDefaultHelpOverride_HelpActive_ShouldFail();
-
-    testDefaultHelpOverride_HelpNotActive_ShouldSucceed();
-
-    testDefaultHelp_PrintToStream_ShouldSucceed();
-
-    testDefaultHelp_ClearHelpText_ShouldSucceed();
 
     return EXIT_SUCCESS;
 }

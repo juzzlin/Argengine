@@ -5,6 +5,10 @@ cmake_policy(VERSION 2.8.12)
 
 option(ARGENGINE_SHARED_LIB "Build a shared library" OFF)
 
+option(BUILD_TESTS "Build unit tests" ON)
+
+option(BUILD_EXAMPLES "Build example apps" ON)
+
 set(ARGENGINE_VERSION_MAJOR "0")
 set(ARGENGINE_VERSION_MINOR "0")
 set(ARGENGINE_VERSION_PATCH "1")

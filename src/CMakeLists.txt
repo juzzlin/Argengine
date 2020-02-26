@@ -21,5 +21,11 @@ install(TARGETS ${LIBRARY_NAME}
     PUBLIC_HEADER DESTINATION include
 )
 
-add_subdirectory(tests)
+if(BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
+
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
 
