@@ -38,41 +38,62 @@ using juzzlin::Argengine;
 
 const std::string name = "Argengine";
 
-void testUnknownArgumentBehavior_ShouldThrow()
+void testDefaultHelpOverride_HelpActive_ShouldFail()
 {
-    Argengine ae({ "test", "--foo2" });
-    ae.addArgument({ "--bar" }, [] {
-    });
-
+    Argengine ae({ "test" });
     std::string error;
     try {
-        ae.parse();
+        ae.addArgument({ "-h" }, [&] {
+        });
     } catch (std::runtime_error & e) {
         error = e.what();
     }
-    assert(error == name + ": Uknown argument '" + ae.arguments().at(1) + "'!");
+    assert(error == name + ": Argument '-h, --help' already defined!");
 }
 
-void testUnknownArgument_SingleValueAssignment_ShouldThrow()
+void testDefaultHelpOverride_HelpNotActive_ShouldSucceed()
 {
-    Argengine ae({ "test", "--foo=42" });
-    ae.addArgument({ "--bar" }, [](std::string) {
-    });
-
+    Argengine ae({ "test" }, false);
     std::string error;
     try {
-        ae.parse();
+        ae.addArgument({ "-h" }, [&] {
+        });
     } catch (std::runtime_error & e) {
         error = e.what();
     }
-    assert(error == name + ": Uknown argument '--foo'!");
+    assert(error == "");
+}
+
+void testDefaultHelp_PrintToStream_ShouldSucceed()
+{
+    Argengine ae({ "test" });
+    std::stringstream ss;
+    ae.setOutputStream(ss);
+    ae.printHelp();
+
+    assert(ss.str() == "Usage: " + ae.arguments().at(0) + " [OPTIONS]\n\nOptions:\n\n");
+}
+
+void testDefaultHelp_ClearHelpText_ShouldSucceed()
+{
+    Argengine ae({ "test" });
+    std::stringstream ss;
+    ae.setOutputStream(ss);
+    ae.setHelpText("");
+    ae.printHelp();
+
+    assert(ss.str() == "Options:\n\n");
 }
 
 int main(int, char **)
 {
-    testUnknownArgumentBehavior_ShouldThrow();
+    testDefaultHelpOverride_HelpActive_ShouldFail();
 
-    testUnknownArgument_SingleValueAssignment_ShouldThrow();
+    testDefaultHelpOverride_HelpNotActive_ShouldSucceed();
+
+    testDefaultHelp_PrintToStream_ShouldSucceed();
+
+    testDefaultHelp_ClearHelpText_ShouldSucceed();
 
     return EXIT_SUCCESS;
 }

@@ -36,13 +36,6 @@ namespace juzzlin {
 class Argengine
 {
 public:
-    enum class UnknownArgumentBehavior
-    {
-        Ignore,
-        Throw,
-        Warn
-    };
-
     enum class HelpSorting
     {
         None,
@@ -96,9 +89,6 @@ public:
 
     //! Set handler for positional arguments.
     void setPositionalArgumentCallback(MultiStringCallback callback);
-
-    //! Set behavior for unknown arguments. Default is Warn.
-    void setUnknownArgumentBehavior(UnknownArgumentBehavior behavior);
 
     //! Set custom output stream. Default is std::cout.
     //! \param out The new output stream.

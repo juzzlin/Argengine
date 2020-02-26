@@ -126,6 +126,7 @@ public:
                 *m_out << " ";
             }
             *m_out << optionText.second;
+            *m_out << std::endl;
         }
         *m_out << std::endl;
     }
@@ -145,11 +146,6 @@ public:
         }
 
         checkRequired();
-    }
-
-    void setUnknownArgumentBehavior(UnknownArgumentBehavior behavior)
-    {
-        m_unknownArgumentBehavior = behavior;
     }
 
     ~Impl() = default;
@@ -248,20 +244,6 @@ private:
         return getArgumentDefinition(ArgumentVariants { argument });
     }
 
-    void handleUnknownArgument(std::string arg)
-    {
-        const auto warning = name() + ": Uknown argument '" + arg + "'!";
-        switch (m_unknownArgumentBehavior) {
-        case UnknownArgumentBehavior::Ignore:
-            break;
-        case UnknownArgumentBehavior::Throw:
-            throw std::runtime_error(warning);
-        case UnknownArgumentBehavior::Warn:
-            *m_err << warning << std::endl;
-            break;
-        }
-    }
-
     std::string name() const
     {
         return "Argengine";
@@ -303,7 +285,7 @@ private:
         }
 
         if (!assignmentFormatArg.empty()) {
-            handleUnknownArgument(assignmentFormatArg);
+            throwUnknownArgumentError(assignmentFormatArg);
         }
 
         return false;
@@ -339,7 +321,7 @@ private:
         }
 
         if (!spacelessFormatSucceeded) {
-            handleUnknownArgument(arg);
+            throwUnknownArgumentError(arg);
         }
     }
 
@@ -367,6 +349,11 @@ private:
         throw std::runtime_error(name() + ": Argument '" + existing.getVariantsString() + "' is required!");
     }
 
+    [[noreturn]] void throwUnknownArgumentError(std::string arg)
+    {
+        throw std::runtime_error(name() + ": Uknown argument '" + arg + "'!");
+    }
+
     [[noreturn]] void throwNoValueError(const ArgumentDefinition & existing)
     {
         throw std::runtime_error(name() + ": No value for argument '" + existing.getVariantsString() + "' given!");
@@ -379,8 +366,6 @@ private:
     HelpSorting m_helpSorting = HelpSorting::None;
 
     std::vector<ArgumentDefinitionPtr> m_argumentDefinitions;
-
-    UnknownArgumentBehavior m_unknownArgumentBehavior = UnknownArgumentBehavior::Warn;
 
     MultiStringCallback m_positionalArgumentCallback = nullptr;
 
@@ -447,11 +432,6 @@ void Argengine::setHelpSorting(HelpSorting helpSorting)
 void Argengine::setPositionalArgumentCallback(MultiStringCallback callback)
 {
     m_impl->setPositionalArgumentCallback(callback);
-}
-
-void Argengine::setUnknownArgumentBehavior(UnknownArgumentBehavior behavior)
-{
-    m_impl->setUnknownArgumentBehavior(behavior);
 }
 
 void Argengine::setOutputStream(std::ostream & out)
