@@ -42,6 +42,19 @@ public:
         Ascending
     };
 
+    struct Error
+    {
+        enum class Code
+        {
+            Ok,
+            Failed
+        };
+
+        Code code = Code::Ok;
+
+        std::string message;
+    };
+
     //! Constructor.
     Argengine(int argc, char ** argv, bool addDefaultHelp = true);
 
@@ -98,8 +111,12 @@ public:
     //! \param err The new error stream.
     void setErrorStream(std::ostream & err);
 
-    //! Parses by using the current config.
+    //! Parses by using the current config. Throws `std::runtime_error` on error.
     void parse();
+
+    //! Parses by using the current config.
+    //! \param error Contains error info error.
+    void parse(Error & error);
 
     //! Prints help/usage.
     void printHelp();

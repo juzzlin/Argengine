@@ -41,12 +41,11 @@ int main(int argc, char ** argv)
         std::cout << value.size() << std::endl;
     });
 
-    try {
-        ae.parse();
-    } catch (const std::runtime_error & e) {
-        std::cerr << e.what() << std::endl
-                  << std::endl;
-        ae.printHelp();
+    Argengine::Error error;
+    ae.parse(error);
+
+    if (error.code != Argengine::Error::Code::Ok) {
+        std::cerr << error.message << std::endl;
         return EXIT_FAILURE;
     }
 

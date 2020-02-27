@@ -462,6 +462,16 @@ void Argengine::parse()
     m_impl->parse();
 }
 
+void Argengine::parse(Error & error)
+{
+    try {
+        m_impl->parse();
+    } catch (std::runtime_error & e) {
+        error.message = e.what();
+        error.code = Error::Code::Failed;
+    }
+}
+
 Argengine::~Argengine() = default;
 
 } // juzzlin
