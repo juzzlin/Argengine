@@ -274,7 +274,7 @@ private:
     bool tryProcessAssigmentFormat(std::string arg)
     {
         std::string assignmentFormatArg;
-        const auto pos = arg.find_first_of('=');
+        const auto pos = arg.find('=');
         if (pos != arg.npos) {
             assignmentFormatArg = arg.substr(0, pos);
             const auto match = getArgumentDefinition(assignmentFormatArg);
