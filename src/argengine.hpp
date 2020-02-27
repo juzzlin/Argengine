@@ -36,12 +36,14 @@ namespace juzzlin {
 class Argengine
 {
 public:
+    //! Sorting order of arguments in help.
     enum class HelpSorting
     {
         None,
         Ascending
     };
 
+    //! Error structure set by parse().
     struct Error
     {
         enum class Code
@@ -56,29 +58,57 @@ public:
     };
 
     //! Constructor.
+    //! \param argc Argument count as in `main(int argc, char ** argv)`
+    //! \param argv Argument array as in `main(int argc, char ** argv)`
+    //! \param addDefaultHelp If true, a default help action for "-h" and "--help" is added.
     Argengine(int argc, char ** argv, bool addDefaultHelp = true);
 
     //! Constructor.
     //! \param args The arguments as a vector of strings. It is assumed, that the first element is the name of the executed application.
+    //! \param addDefaultHelp If true, a default help action for "-h" and "--help" is added.
     using ArgumentVector = std::vector<std::string>;
     explicit Argengine(ArgumentVector args, bool addDefaultHelp = true);
 
     //! Destructor.
     ~Argengine();
 
+    //! Adds a valueless argument to the configuration.
+    //! \param argumentVariants A set of arguments for the given action, usually the short and long form: {"-f", "--foo"}
+    //! \param callback Callback to be called when the argument has been given. Signature: `void()`.
     using ArgumentVariants = std::set<std::string>;
     using ValuelessCallback = std::function<void()>;
     void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback);
 
+    //! Adds a valueless argument to the configuration.
+    //! \param argumentVariants \see addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback).
+    //! \param callback \see addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback).
+    //! \param required If true, an error will follow if the argument is not present during parse().
     void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required);
 
+    //! Adds a valueless argument to the configuration.
+    //! \param argumentVariants \see addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback).
+    //! \param callback \see addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback).
+    //! \param required \see addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required).
+    //! \param infoText Short info text shown in help/usage.
     void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required, std::string infoText);
 
+    //! Adds an argument with a single value to the configuration.
+    //! \param argumentVariants A set of arguments for the given action, usually the short and long form: {"-f", "--foo"}
+    //! \param callback Callback to be called when the argument has been given with a value. Signature: `void(std::string)`.
     using SingleStringCallback = std::function<void(std::string)>;
     void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback);
 
+    //! Adds an argument with a single value to the configuration.
+    //! \param argumentVariants \see addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback).
+    //! \param callback \see addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback).
+    //! \param required If true, an error will follow if the argument is not present during parse().
     void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required);
 
+    //! Adds an argument with a single value to the configuration.
+    //! \param argumentVariants \see addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback).
+    //! \param callback \see addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback).
+    //! \param required \see addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required).
+    //! \param infoText Short info text shown in help/usage.
     void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required, std::string infoText);
 
     //! \return All given arguments.
