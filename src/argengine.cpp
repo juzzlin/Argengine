@@ -48,22 +48,12 @@ public:
 
     void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required, std::string infoText)
     {
-        if (const auto existing = getArgumentDefinition(argumentVariants)) {
-            throwArgumentExistingError(*existing);
-        } else {
-            const auto argumentDefinition = std::make_shared<ArgumentDefinition>(argumentVariants, callback, required, infoText);
-            m_argumentDefinitions.push_back(argumentDefinition);
-        }
+        addArgumentCommon(argumentVariants, callback, required, infoText);
     }
 
     void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required, std::string infoText)
     {
-        if (const auto existing = getArgumentDefinition(argumentVariants)) {
-            throwArgumentExistingError(*existing);
-        } else {
-            const auto argumentDefinition = std::make_shared<ArgumentDefinition>(argumentVariants, callback, required, infoText);
-            m_argumentDefinitions.push_back(argumentDefinition);
-        }
+        addArgumentCommon(argumentVariants, callback, required, infoText);
     }
 
     ArgumentVector arguments() const
@@ -148,6 +138,11 @@ public:
         checkRequired();
     }
 
+    void setAutoDash(bool autoDash)
+    {
+        m_autoDash = autoDash;
+    }
+
     ~Impl() = default;
 
 private:
@@ -206,6 +201,17 @@ private:
 
         std::string infoText;
     };
+
+    template<typename CallbackType>
+    void addArgumentCommon(ArgumentVariants argumentVariants, CallbackType callback, bool required, std::string infoText)
+    {
+        if (const auto existing = getArgumentDefinition(argumentVariants)) {
+            throwArgumentExistingError(*existing);
+        } else {
+            const auto argumentDefinition = std::make_shared<ArgumentDefinition>(argumentVariants, callback, required, infoText);
+            m_argumentDefinitions.push_back(argumentDefinition);
+        }
+    }
 
     void addHelp()
     {
@@ -372,6 +378,8 @@ private:
     std::ostream * m_out = &std::cout;
 
     std::ostream * m_err = &std::cerr;
+
+    bool m_autoDash = true;
 };
 
 Argengine::Argengine(int argc, char ** argv, bool addDefaultHelp)
