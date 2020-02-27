@@ -81,14 +81,6 @@ public:
 
     void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required, std::string infoText);
 
-    using StringValueVector = std::vector<std::string>;
-    using MultiStringCallback = std::function<void(StringValueVector)>;
-    void addArgument(ArgumentVariants argumentVariants, MultiStringCallback callback);
-
-    void addArgument(ArgumentVariants argumentVariants, MultiStringCallback callback, bool required);
-
-    void addArgument(ArgumentVariants argumentVariants, MultiStringCallback callback, bool required, std::string infoText);
-
     //! \return All given arguments.
     ArgumentVector arguments() const;
 
@@ -101,6 +93,8 @@ public:
     void setHelpSorting(HelpSorting helpSorting);
 
     //! Set handler for positional arguments.
+    using StringValueVector = std::vector<std::string>;
+    using MultiStringCallback = std::function<void(StringValueVector)>;
     void setPositionalArgumentCallback(MultiStringCallback callback);
 
     //! Set custom output stream. Default is std::cout.
