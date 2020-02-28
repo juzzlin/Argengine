@@ -123,11 +123,9 @@ public:
 
     void parse()
     {
-        processArgs(true);
+        processArgs();
 
         checkRequired();
-
-        processArgs(false);
     }
 
     void setAutoDash(bool autoDash)
@@ -249,20 +247,20 @@ private:
         return "Argengine";
     }
 
-    bool valueIsArg(std::string value)
+    bool valueIsArg(std::string value) const
     {
         return getArgumentDefinition(value) || tryProcessAssigmentFormat(value, true) || tryProcessSpacelessFormat(value, true);
     }
 
-    void processArgs(bool dryRun)
+    void processArgs()
     {
         for (size_t i = 1; i < m_args.size(); i++) {
             const auto arg = m_args.at(i);
             // Try to reason out 'ARG' or 'ARG VALUE'
             if (const auto match = getArgumentDefinition(arg)) {
-                i = processTrivialMatch(match, i, dryRun);
+                i = processTrivialMatch(match, i, false);
                 // Try to reason out 'ARG=VALUE', then 'ARGVALUE'
-            } else if (!tryProcessAssigmentFormat(arg, dryRun) && !tryProcessSpacelessFormat(arg, dryRun)) {
+            } else if (!tryProcessAssigmentFormat(arg, false) && !tryProcessSpacelessFormat(arg, false)) {
                 throwUnknownArgumentError(arg);
             }
         }
@@ -278,6 +276,10 @@ private:
         } else if (match->singleStringCallback) {
             if (++currentIndex < m_args.size()) {
                 if (!dryRun) {
+                    const auto value = m_args.at(currentIndex);
+                    if (valueIsArg(value)) {
+                        throwNoValueError(*match);
+                    }
                     match->singleStringCallback(m_args.at(currentIndex));
                 }
                 match->applied = true;
@@ -301,6 +303,9 @@ private:
                     throwNoValueError(*match);
                 }
                 const auto value = arg.substr(pos + 1, valueLength);
+                if (valueIsArg(value)) {
+                    throwNoValueError(*match);
+                }
                 if (!dryRun) {
                     match->singleStringCallback(value);
                 }
@@ -336,6 +341,9 @@ private:
                     throwNoValueError(*match);
                 }
                 const auto value = arg.substr(pos, valueLength);
+                if (valueIsArg(value)) {
+                    throwNoValueError(*match);
+                }
                 if (!dryRun) {
                     match->singleStringCallback(value);
                 }
