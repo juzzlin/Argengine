@@ -123,19 +123,11 @@ public:
 
     void parse()
     {
-        for (size_t i = 1; i < m_args.size(); i++) {
-            const auto arg = m_args.at(i);
-            // Try to reason out 'ARG' or 'ARG VALUE'
-            if (const auto match = getArgumentDefinition(arg)) {
-                i = processTrivialMatch(match, i);
-                // Try to reason out 'ARG=VALUE'
-            } else if (!tryProcessAssigmentFormat(arg)) {
-                // Try to reason out 'ARGVALUE'
-                tryProcessSpacelessFormat(arg);
-            }
-        }
+        processArgs(true);
 
         checkRequired();
+
+        processArgs(false);
     }
 
     void setAutoDash(bool autoDash)
@@ -257,14 +249,37 @@ private:
         return "Argengine";
     }
 
-    size_t processTrivialMatch(ArgumentDefinitionPtr match, size_t currentIndex)
+    bool valueIsArg(std::string value)
+    {
+        return getArgumentDefinition(value) || tryProcessAssigmentFormat(value, true) || tryProcessSpacelessFormat(value, true);
+    }
+
+    void processArgs(bool dryRun)
+    {
+        for (size_t i = 1; i < m_args.size(); i++) {
+            const auto arg = m_args.at(i);
+            // Try to reason out 'ARG' or 'ARG VALUE'
+            if (const auto match = getArgumentDefinition(arg)) {
+                i = processTrivialMatch(match, i, dryRun);
+                // Try to reason out 'ARG=VALUE', then 'ARGVALUE'
+            } else if (!tryProcessAssigmentFormat(arg, dryRun) && !tryProcessSpacelessFormat(arg, dryRun)) {
+                throwUnknownArgumentError(arg);
+            }
+        }
+    }
+
+    size_t processTrivialMatch(ArgumentDefinitionPtr match, size_t currentIndex, bool dryRun) const
     {
         if (match->valuelessCallback) {
-            match->valuelessCallback();
+            if (!dryRun) {
+                match->valuelessCallback();
+            }
             match->applied = true;
         } else if (match->singleStringCallback) {
             if (++currentIndex < m_args.size()) {
-                match->singleStringCallback(m_args.at(currentIndex));
+                if (!dryRun) {
+                    match->singleStringCallback(m_args.at(currentIndex));
+                }
                 match->applied = true;
             } else {
                 throwNoValueError(*match);
@@ -273,7 +288,7 @@ private:
         return currentIndex;
     }
 
-    bool tryProcessAssigmentFormat(std::string arg)
+    bool tryProcessAssigmentFormat(std::string arg, bool dryRun) const
     {
         std::string assignmentFormatArg;
         const auto pos = arg.find('=');
@@ -286,7 +301,9 @@ private:
                     throwNoValueError(*match);
                 }
                 const auto value = arg.substr(pos + 1, valueLength);
-                match->singleStringCallback(value);
+                if (!dryRun) {
+                    match->singleStringCallback(value);
+                }
                 match->applied = true;
                 return true;
             }
@@ -299,9 +316,8 @@ private:
         return false;
     }
 
-    void tryProcessSpacelessFormat(std::string arg)
+    bool tryProcessSpacelessFormat(std::string arg, bool dryRun) const
     {
-        bool spacelessFormatSucceeded {};
         std::map<ArgumentDefinitionPtr, std::string> matchingDefinitions;
         for (auto && definition : m_argumentDefinitions) {
             for (auto && variant : definition->variants) {
@@ -320,20 +336,20 @@ private:
                     throwNoValueError(*match);
                 }
                 const auto value = arg.substr(pos, valueLength);
-                match->singleStringCallback(value);
+                if (!dryRun) {
+                    match->singleStringCallback(value);
+                }
                 match->applied = true;
-                spacelessFormatSucceeded = true;
+                return true;
             }
         } else if (matchingDefinitions.size() > 1) {
             throwAmbiguousArgumentError(arg, matchingDefinitions);
         }
 
-        if (!spacelessFormatSucceeded) {
-            throwUnknownArgumentError(arg);
-        }
+        return false;
     }
 
-    [[noreturn]] void throwAmbiguousArgumentError(std::string argument, std::map<ArgumentDefinitionPtr, std::string> matchingDefinitions)
+    [[noreturn]] void throwAmbiguousArgumentError(std::string argument, std::map<ArgumentDefinitionPtr, std::string> matchingDefinitions) const
     {
         std::string ambiguos;
         size_t count = 0;
@@ -347,22 +363,22 @@ private:
         throw std::runtime_error(name() + ": Argument '" + argument + "' is ambiguos due to arguments: " + ambiguos);
     }
 
-    [[noreturn]] void throwArgumentExistingError(const ArgumentDefinition & existing)
+    [[noreturn]] void throwArgumentExistingError(const ArgumentDefinition & existing) const
     {
         throw std::runtime_error(name() + ": Argument '" + existing.getVariantsString() + "' already defined!");
     }
 
-    [[noreturn]] void throwRequiredError(const ArgumentDefinition & existing)
+    [[noreturn]] void throwRequiredError(const ArgumentDefinition & existing) const
     {
         throw std::runtime_error(name() + ": Argument '" + existing.getVariantsString() + "' is required!");
     }
 
-    [[noreturn]] void throwUnknownArgumentError(std::string arg)
+    [[noreturn]] void throwUnknownArgumentError(std::string arg) const
     {
         throw std::runtime_error(name() + ": Uknown argument '" + arg + "'!");
     }
 
-    [[noreturn]] void throwNoValueError(const ArgumentDefinition & existing)
+    [[noreturn]] void throwNoValueError(const ArgumentDefinition & existing) const
     {
         throw std::runtime_error(name() + ": No value for argument '" + existing.getVariantsString() + "' given!");
     }
