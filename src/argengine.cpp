@@ -66,11 +66,6 @@ public:
         m_out = &out;
     }
 
-    void setErrorStream(std::ostream & err)
-    {
-        m_err = &err;
-    }
-
     void setHelpText(std::string helpText)
     {
         m_helpText = helpText;
@@ -403,8 +398,6 @@ private:
 
     std::ostream * m_out = &std::cout;
 
-    std::ostream * m_err = &std::cerr;
-
     bool m_autoDash = true;
 };
 
@@ -471,11 +464,6 @@ void Argengine::setPositionalArgumentCallback(MultiStringCallback callback)
 void Argengine::setOutputStream(std::ostream & out)
 {
     m_impl->setOutputStream(out);
-}
-
-void Argengine::setErrorStream(std::ostream & err)
-{
-    m_impl->setErrorStream(err);
 }
 
 void Argengine::printHelp()

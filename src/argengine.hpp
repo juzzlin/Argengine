@@ -131,10 +131,6 @@ public:
     //! \param out The new output stream.
     void setOutputStream(std::ostream & out);
 
-    //! Set custom error/warning stream. Default is std::cerr.
-    //! \param err The new error stream.
-    void setErrorStream(std::ostream & err);
-
     //! Parses by using the current config. Throws `std::runtime_error` on error.
     void parse();
 
