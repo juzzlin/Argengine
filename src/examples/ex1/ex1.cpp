@@ -32,20 +32,31 @@ using juzzlin::Argengine;
 int main(int argc, char ** argv)
 {
     Argengine ae(argc, argv);
-    ae.addArgument({ "-a", "--arguments" }, [&] {
-        for (int i = 0; i < argc; i++) {
-            std::cout << argv[i] << std::endl;
-        }
-    });
-    ae.addArgument({ "-p" }, [](std::string value) {
-        std::cout << value.size() << std::endl;
-    });
+    ae.addArgument(
+      { "-a", "--arguments" }, [&] {
+          for (int i = 0; i < argc; i++) {
+              std::cout << argv[i] << std::endl;
+          }
+      },
+      false, "Print arguments.");
+    ae.addArgument(
+      { "-p" }, [](std::string value) {
+          std::cout << value.size() << std::endl;
+      },
+      false, "Print length of given value.");
+    ae.addArgument(
+      { "-r" }, [](std::string value) {
+          std::cout << value.size() << std::endl;
+      },
+      true, "This is required.");
 
     Argengine::Error error;
     ae.parse(error);
 
     if (error.code != Argengine::Error::Code::Ok) {
-        std::cerr << error.message << std::endl;
+        std::cerr << error.message << std::endl
+                  << std::endl;
+        ae.printHelp();
         return EXIT_FAILURE;
     }
 

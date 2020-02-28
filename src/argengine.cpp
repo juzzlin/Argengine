@@ -105,7 +105,7 @@ public:
         std::vector<std::pair<std::string, std::string>> optionTexts;
         size_t maxLength = 0;
         for (auto && option : m_argumentDefinitions) {
-            const auto variantsString = option->getVariantsString();
+            const auto variantsString = option->getVariantsString() + (option->singleStringCallback ? " [" + option->valuePlaceholder + "]" : "");
             maxLength = std::max(variantsString.size(), maxLength);
             optionTexts.push_back({ variantsString, option->infoText });
         }
@@ -200,6 +200,8 @@ private:
         bool applied = false;
 
         std::string infoText;
+
+        std::string valuePlaceholder = "VALUE";
     };
 
     template<typename CallbackType>
