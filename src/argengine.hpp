@@ -36,27 +36,6 @@ namespace juzzlin {
 class Argengine
 {
 public:
-    //! Sorting order of arguments in help.
-    enum class HelpSorting
-    {
-        None,
-        Ascending
-    };
-
-    //! Error structure set by parse().
-    struct Error
-    {
-        enum class Code
-        {
-            Ok,
-            Failed
-        };
-
-        Code code = Code::Ok;
-
-        std::string message;
-    };
-
     //! Constructor.
     //! \param argc Argument count as in `main(int argc, char ** argv)`
     //! \param argv Argument array as in `main(int argc, char ** argv)`
@@ -101,6 +80,13 @@ public:
     //! \param helpText Text shown in help. E.g. "MyApplication v1.0.0, Copyright (c) 2020 Foo Bar".
     void setHelpText(std::string helpText);
 
+    //! Sorting order of arguments in help.
+    enum class HelpSorting
+    {
+        None,
+        Ascending
+    };
+
     //! Set sorting style of arguments in help.
     //! \param helpSorting The sorting direction enum. Default is HelpSorting::None.
     void setHelpSorting(HelpSorting helpSorting);
@@ -116,6 +102,20 @@ public:
 
     //! Parses by using the current config. Throws `std::runtime_error` on error.
     void parse();
+
+    //! Error structure set by parse().
+    struct Error
+    {
+        enum class Code
+        {
+            Ok,
+            Failed
+        };
+
+        Code code = Code::Ok;
+
+        std::string message;
+    };
 
     //! Parses by using the current config.
     //! \param error Contains error info error.
