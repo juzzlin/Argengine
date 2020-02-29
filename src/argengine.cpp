@@ -126,9 +126,9 @@ public:
     {
         processArgs(true);
 
-        processArgs(false);
-
         checkRequired();
+
+        processArgs(false);
     }
 
     void setAutoDash(bool autoDash)
@@ -255,64 +255,7 @@ private:
         return "Argengine";
     }
 
-    bool valueIsArg(std::string value) const
-    {
-        return getArgumentDefinition(value) || tryProcessAssigmentFormat(value, true) || tryProcessSpacelessFormat(value, true);
-    }
-
-    void processArgs(bool dryRun)
-    {
-        // Process help first as it's a special case
-        for (size_t i = 1; i < m_args.size(); i++) {
-            const auto arg = m_args.at(i);
-            if (const auto match = getArgumentDefinition(arg)) {
-                if (match->isHelp) {
-                    processTrivialMatch(match, i, false);
-                    break;
-                }
-            }
-        }
-
-        // Other arguments
-        for (size_t i = 1; i < m_args.size(); i++) {
-            const auto arg = m_args.at(i);
-            // Try to reason out 'ARG' or 'ARG VALUE'
-            if (const auto match = getArgumentDefinition(arg)) {
-                if (!match->isHelp) {
-                    i = processTrivialMatch(match, i, dryRun);
-                }
-                // Try to reason out 'ARG=VALUE', then 'ARGVALUE'
-            } else if (!tryProcessAssigmentFormat(arg, dryRun) && !tryProcessSpacelessFormat(arg, dryRun)) {
-                throwUnknownArgumentError(arg);
-            }
-        }
-    }
-
-    size_t processTrivialMatch(ArgumentDefinitionPtr match, size_t currentIndex, bool dryRun) const
-    {
-        if (match->valuelessCallback) {
-            if (!dryRun) {
-                match->valuelessCallback();
-            }
-            match->applied = true;
-        } else if (match->singleStringCallback) {
-            if (++currentIndex < m_args.size()) {
-                if (!dryRun) {
-                    const auto value = m_args.at(currentIndex);
-                    if (valueIsArg(value)) {
-                        throwNoValueError(*match);
-                    }
-                    match->singleStringCallback(m_args.at(currentIndex));
-                }
-                match->applied = true;
-            } else {
-                throwNoValueError(*match);
-            }
-        }
-        return currentIndex;
-    }
-
-    bool tryProcessAssigmentFormat(std::string arg, bool dryRun) const
+    std::pair<std::string, std::string> splitAssignmentFormat(std::string arg) const
     {
         std::string assignmentFormatArg;
         const auto pos = arg.find('=');
@@ -322,28 +265,15 @@ private:
             if (match && match->singleStringCallback) {
                 const auto valueLength = arg.size() - (pos + 1);
                 if (!valueLength) {
-                    throwNoValueError(*match);
+                    return { assignmentFormatArg, "" };
                 }
-                const auto value = arg.substr(pos + 1, valueLength);
-                if (valueIsArg(value)) {
-                    throwNoValueError(*match);
-                }
-                if (!dryRun) {
-                    match->singleStringCallback(value);
-                }
-                match->applied = true;
-                return true;
+                return { assignmentFormatArg, arg.substr(pos + 1, valueLength) };
             }
         }
-
-        if (!assignmentFormatArg.empty()) {
-            throwUnknownArgumentError(assignmentFormatArg);
-        }
-
-        return false;
+        return {};
     }
 
-    bool tryProcessSpacelessFormat(std::string arg, bool dryRun) const
+    std::pair<std::string, std::string> splitSpacelessFormat(std::string arg) const
     {
         std::map<ArgumentDefinitionPtr, std::string> matchingDefinitions;
         for (auto && definition : m_argumentDefinitions) {
@@ -353,44 +283,98 @@ private:
                 }
             }
         }
-
         if (matchingDefinitions.size() == 1) {
             const auto match = matchingDefinitions.begin()->first;
             if (match && match->singleStringCallback) {
-                const auto pos = matchingDefinitions.begin()->second.size();
+                const auto spacelessArg = matchingDefinitions.begin()->second;
+                const auto pos = spacelessArg.size();
                 const auto valueLength = arg.size() - pos;
                 if (!valueLength) {
-                    throwNoValueError(*match);
+                    return { spacelessArg, "" };
                 }
-                const auto value = arg.substr(pos, valueLength);
-                if (valueIsArg(value)) {
-                    throwNoValueError(*match);
-                }
-                if (!dryRun) {
-                    match->singleStringCallback(value);
-                }
-                match->applied = true;
-                return true;
+                return { spacelessArg, arg.substr(pos, valueLength) };
             }
-        } else if (matchingDefinitions.size() > 1) {
-            throwAmbiguousArgumentError(arg, matchingDefinitions);
         }
-
-        return false;
+        return {};
     }
 
-    [[noreturn]] void throwAmbiguousArgumentError(std::string argument, std::map<ArgumentDefinitionPtr, std::string> matchingDefinitions) const
+    ArgumentVector tokenize(ArgumentVector args) const
     {
-        std::string ambiguos;
-        size_t count = 0;
-        for (auto iter : matchingDefinitions) {
-            ambiguos += "'" + iter.second + "'";
-            if (++count < matchingDefinitions.size()) {
-                ambiguos += ", ";
+        ArgumentVector tokens;
+
+        for (auto && arg : args) {
+            const auto assignmentTokens = splitAssignmentFormat(arg);
+            if (!assignmentTokens.first.empty()) {
+                tokens.push_back(assignmentTokens.first);
+                if (!assignmentTokens.second.empty()) {
+                    tokens.push_back(assignmentTokens.second);
+                }
+            } else {
+                const auto spacelessTokens = splitSpacelessFormat(arg);
+                if (!spacelessTokens.first.empty()) {
+                    tokens.push_back(spacelessTokens.first);
+                    if (!spacelessTokens.second.empty()) {
+                        tokens.push_back(spacelessTokens.second);
+                    }
+                } else {
+                    tokens.push_back(arg);
+                }
             }
         }
 
-        throw std::runtime_error(name() + ": Argument '" + argument + "' is ambiguos due to arguments: " + ambiguos);
+        return tokens;
+    }
+
+    void processArgs(bool dryRun)
+    {
+        const auto tokens = tokenize(m_args);
+
+        // Process help first as it's a special case
+        for (size_t i = 1; i < tokens.size(); i++) {
+            const auto arg = tokens.at(i);
+            if (const auto definition = getArgumentDefinition(arg)) {
+                if (definition->isHelp) {
+                    i = processDefinitionMatch(definition, tokens, i, false);
+                    break;
+                }
+            }
+        }
+
+        // Other arguments
+        for (size_t i = 1; i < tokens.size(); i++) {
+            const auto arg = tokens.at(i);
+            if (const auto definition = getArgumentDefinition(arg)) {
+                if (!definition->isHelp) {
+                    i = processDefinitionMatch(definition, tokens, i, dryRun);
+                }
+            } else {
+                throwUnknownArgumentError(arg);
+            }
+        }
+    }
+
+    size_t processDefinitionMatch(ArgumentDefinitionPtr match, const ArgumentVector & tokens, size_t currentIndex, bool dryRun) const
+    {
+        if (match->valuelessCallback) {
+            if (!dryRun) {
+                match->valuelessCallback();
+            }
+            match->applied = true;
+        } else if (match->singleStringCallback) {
+            if (++currentIndex < tokens.size()) {
+                if (!dryRun) {
+                    const auto value = tokens.at(currentIndex);
+                    if (const auto innerMatch = getArgumentDefinition(value)) {
+                        throwNoValueError(*match);
+                    }
+                    match->singleStringCallback(tokens.at(currentIndex));
+                }
+                match->applied = true;
+            } else {
+                throwNoValueError(*match);
+            }
+        }
+        return currentIndex;
     }
 
     [[noreturn]] void throwArgumentExistingError(const ArgumentDefinition & existing) const
