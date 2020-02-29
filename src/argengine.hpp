@@ -75,41 +75,19 @@ public:
     //! Adds a valueless argument to the configuration.
     //! \param argumentVariants A set of arguments for the given action, usually the short and long form: {"-f", "--foo"}
     //! \param callback Callback to be called when the argument has been given. Signature: `void()`.
+    //! \param required If true, an error will follow if the argument is not present during parse().
+    //! \param infoText Short info text shown in help/usage.
     using ArgumentVariants = std::set<std::string>;
     using ValuelessCallback = std::function<void()>;
-    void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback);
-
-    //! Adds a valueless argument to the configuration.
-    //! \param argumentVariants \see addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback).
-    //! \param callback \see addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback).
-    //! \param required If true, an error will follow if the argument is not present during parse().
-    void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required);
-
-    //! Adds a valueless argument to the configuration.
-    //! \param argumentVariants \see addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback).
-    //! \param callback \see addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback).
-    //! \param required \see addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required).
-    //! \param infoText Short info text shown in help/usage.
-    void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required, std::string infoText);
+    void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required = false, std::string infoText = "");
 
     //! Adds an argument with a single value to the configuration.
     //! \param argumentVariants A set of arguments for the given action, usually the short and long form: {"-f", "--foo"}
     //! \param callback Callback to be called when the argument has been given with a value. Signature: `void(std::string)`.
-    using SingleStringCallback = std::function<void(std::string)>;
-    void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback);
-
-    //! Adds an argument with a single value to the configuration.
-    //! \param argumentVariants \see addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback).
-    //! \param callback \see addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback).
-    //! \param required If true, an error will follow if the argument is not present during parse().
-    void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required);
-
-    //! Adds an argument with a single value to the configuration.
-    //! \param argumentVariants \see addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback).
-    //! \param callback \see addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback).
     //! \param required \see addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required).
     //! \param infoText Short info text shown in help/usage.
-    void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required, std::string infoText);
+    using SingleStringCallback = std::function<void(std::string)>;
+    void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required = false, std::string infoText = "");
 
     //! Special method to add custom help. Help is always executed first if present.
     //! \param argumentVariants A set of arguments for the given action, usually the short and long form: {"-h", "--help"}
