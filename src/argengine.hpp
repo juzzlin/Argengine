@@ -111,6 +111,11 @@ public:
     //! \param infoText Short info text shown in help/usage.
     void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required, std::string infoText);
 
+    //! Special method to add custom help. Help is always executed first if present.
+    //! \param argumentVariants A set of arguments for the given action, usually the short and long form: {"-h", "--help"}
+    //! \param callback Callback to be called when the argument has been given. Signature: `void()`.
+    void addHelp(ArgumentVariants argumentVariants, ValuelessCallback callback);
+
     //! \return All given arguments.
     ArgumentVector arguments() const;
 

@@ -31,6 +31,8 @@
 
 namespace juzzlin {
 
+const std::string SHOW_THIS_HELP_TEXT = "Show this help.";
+
 class Argengine::Impl
 {
 public:
@@ -46,14 +48,18 @@ public:
         }
     }
 
-    void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required, std::string infoText)
+private:
+    struct ArgumentDefinition;
+
+public:
+    std::shared_ptr<ArgumentDefinition> addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required, std::string infoText)
     {
-        addArgumentCommon(argumentVariants, callback, required, infoText);
+        return addArgumentCommon(argumentVariants, callback, required, infoText);
     }
 
-    void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required, std::string infoText)
+    std::shared_ptr<ArgumentDefinition> addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required, std::string infoText)
     {
-        addArgumentCommon(argumentVariants, callback, required, infoText);
+        return addArgumentCommon(argumentVariants, callback, required, infoText);
     }
 
     ArgumentVector arguments() const
@@ -184,19 +190,22 @@ private:
 
         bool applied = false;
 
+        bool isHelp = false;
+
         std::string infoText;
 
         std::string valuePlaceholder = "VALUE";
     };
 
     template<typename CallbackType>
-    void addArgumentCommon(ArgumentVariants argumentVariants, CallbackType callback, bool required, std::string infoText)
+    std::shared_ptr<ArgumentDefinition> addArgumentCommon(ArgumentVariants argumentVariants, CallbackType callback, bool required, std::string infoText)
     {
         if (const auto existing = getArgumentDefinition(argumentVariants)) {
             throwArgumentExistingError(*existing);
         } else {
             const auto argumentDefinition = std::make_shared<ArgumentDefinition>(argumentVariants, callback, required, infoText);
             m_argumentDefinitions.push_back(argumentDefinition);
+            return argumentDefinition;
         }
     }
 
@@ -204,12 +213,14 @@ private:
     {
         m_helpText = "Usage: " + m_args.at(0) + " [OPTIONS]";
 
-        addArgument(
+        const auto helpDefinition = addArgument(
           { "-h", "--help" }, [=] {
               printHelp();
               exit(EXIT_SUCCESS);
           },
-          false, "Show this help.");
+          false, SHOW_THIS_HELP_TEXT);
+
+        helpDefinition->isHelp = true;
     }
 
     void checkRequired()
@@ -249,11 +260,25 @@ private:
 
     void processArgs()
     {
+        // Process help first as it's a special case
+        for (size_t i = 1; i < m_args.size(); i++) {
+            const auto arg = m_args.at(i);
+            if (const auto match = getArgumentDefinition(arg)) {
+                if (match->isHelp) {
+                    processTrivialMatch(match, i, false);
+                    break;
+                }
+            }
+        }
+
+        // Other arguments
         for (size_t i = 1; i < m_args.size(); i++) {
             const auto arg = m_args.at(i);
             // Try to reason out 'ARG' or 'ARG VALUE'
             if (const auto match = getArgumentDefinition(arg)) {
-                i = processTrivialMatch(match, i, false);
+                if (!match->isHelp) {
+                    i = processTrivialMatch(match, i, false);
+                }
                 // Try to reason out 'ARG=VALUE', then 'ARGVALUE'
             } else if (!tryProcessAssigmentFormat(arg, false) && !tryProcessSpacelessFormat(arg, false)) {
                 throwUnknownArgumentError(arg);
@@ -439,6 +464,11 @@ void Argengine::addArgument(ArgumentVariants argumentVariants, SingleStringCallb
 void Argengine::addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required, std::string infoText)
 {
     m_impl->addArgument(argumentVariants, callback, required, infoText);
+}
+
+void Argengine::addHelp(ArgumentVariants argumentVariants, ValuelessCallback callback)
+{
+    m_impl->addArgument(argumentVariants, callback, false, SHOW_THIS_HELP_TEXT)->isHelp = true;
 }
 
 Argengine::ArgumentVector Argengine::arguments() const

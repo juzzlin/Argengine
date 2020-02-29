@@ -3,4 +3,5 @@
 - Positional with "--"
 - Version
 - Test for help position => shouldn't matter
+- Test custom help setter
 
