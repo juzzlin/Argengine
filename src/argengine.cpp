@@ -124,7 +124,9 @@ public:
 
     void parse()
     {
-        processArgs();
+        processArgs(true);
+
+        processArgs(false);
 
         checkRequired();
     }
@@ -258,7 +260,7 @@ private:
         return getArgumentDefinition(value) || tryProcessAssigmentFormat(value, true) || tryProcessSpacelessFormat(value, true);
     }
 
-    void processArgs()
+    void processArgs(bool dryRun)
     {
         // Process help first as it's a special case
         for (size_t i = 1; i < m_args.size(); i++) {
@@ -277,10 +279,10 @@ private:
             // Try to reason out 'ARG' or 'ARG VALUE'
             if (const auto match = getArgumentDefinition(arg)) {
                 if (!match->isHelp) {
-                    i = processTrivialMatch(match, i, false);
+                    i = processTrivialMatch(match, i, dryRun);
                 }
                 // Try to reason out 'ARG=VALUE', then 'ARGVALUE'
-            } else if (!tryProcessAssigmentFormat(arg, false) && !tryProcessSpacelessFormat(arg, false)) {
+            } else if (!tryProcessAssigmentFormat(arg, dryRun) && !tryProcessSpacelessFormat(arg, dryRun)) {
                 throwUnknownArgumentError(arg);
             }
         }
