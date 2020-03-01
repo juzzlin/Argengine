@@ -60,7 +60,7 @@ In your code:
 
 # Usage In A Nutshell
 
-The basic principle is that for each argument a lambda callback is added.
+The basic principle is that for each option a lambda callback is added.
 
 Valueless:
 
@@ -68,7 +68,7 @@ Valueless:
     ...
 
     juzzlin::Argengine ae(argc, argv);
-    ae.addArgument({"-f", "--foo"}, [] {
+    ae.addOption({"-f", "--foo"}, [] {
         // Do something
     });
     ae.parse();
@@ -82,7 +82,7 @@ Single value:
     ...
 
     juzzlin::Argengine ae(argc, argv);
-    ae.addArgument({"-f", "--foo"}, [] (std::string value) {
+    ae.addOption({"-f", "--foo"}, [] (std::string value) {
         // Do something with value
     });
     ae.parse();
@@ -92,7 +92,7 @@ Single value:
 
 There can be as many argument variants as liked, usually the short and long version e.g `-f` and `--foo`.
 
-Argengine doesn't care about the naming of the arguments and they can be anything: `-f`, `a`, `/c`, `foo`, `--foo`..
+Argengine doesn't care about the naming of the options and they can be anything: `-f`, `a`, `/c`, `foo`, `--foo`..
 
 Positional arguments (for example a file name for a text editor after other options) can be received with a single callback:
 
@@ -108,13 +108,13 @@ Positional arguments (for example a file name for a text editor after other opti
     ...
 ```
 
-If callback for positional arguments is set, then no errors about `unknown arguments` will occur as all additional arguments will be taken as positional arguments.
+If callback for positional arguments is set, then no errors about `unknown options` will occur as all additional options will be taken as positional arguments.
 
 # Examples
 
-## Valueless arguments: The simplest possible example
+## Valueless options: The simplest possible example
 
-Valueless arguments are arguments without any value, so they are just flags. The lambda callback is of the form `[] {}`.
+Valueless options are options without any value, so they are just flags. The lambda callback is of the form `[] {}`.
 
 ```
 #include "argengine.hpp"
@@ -123,7 +123,7 @@ Valueless arguments are arguments without any value, so they are just flags. The
 int main(int argc, char ** argv)
 {
     juzzlin::Argengine ae(argc, argv);
-    ae.addArgument({"-f", "--foo"}, [] {
+    ae.addOption({"-f", "--foo"}, [] {
         std::cout << "'-f' or '--foo' given!"  << std::endl;
     });
     ae.parse();
@@ -132,11 +132,11 @@ int main(int argc, char ** argv)
 }
 ```
 
-## Single value arguments: The simplest possible example
+## Single value options: The simplest possible example
 
-Single value arguments are arguments that can have only one value.
+Single value options are options that can have only one value.
 
-As an example, for argument `-f` The following formats are allowed: `-f 42`, `-f42`, `-f=42`.
+As an example, for option `-f` The following formats are allowed: `-f 42`, `-f42`, `-f=42`.
 
 Preferably there should be either space or '`=`'. The spaceless format is accepted if not ambiguous.
 
@@ -149,7 +149,7 @@ The lambda callback is of the form `[] (std::string value) {}`.
 int main(int argc, char ** argv)
 {
     juzzlin::Argengine ae(argc, argv);
-    ae.addArgument({"-f", "--foo"}, [] (std::string value) {
+    ae.addOption({"-f", "--foo"}, [] (std::string value) {
         std::cout << "Value for '-f' or '--foo': " << value << std::endl;
     });
     ae.parse();
@@ -158,15 +158,15 @@ int main(int argc, char ** argv)
 }
 ```
 
-## General: Marking an argument **required**
+## General: Marking an option **required**
 
-In order to mark an argument mandatory, there's an overload that accepts `bool required` right after the callback:
+In order to mark an option mandatory, there's an overload that accepts `bool required` right after the callback:
 
 ```
     ...
 
     juzzlin::Argengine ae(argc, argv);
-    ae.addArgument({"-f", "--foo"}, [] {
+    ae.addOption({"-f", "--foo"}, [] {
         // Do something
     },
     true); // Required
@@ -220,7 +220,3 @@ C++11
 # Licence
 
 MIT
-
-# Projects currently using Argengine
-
-* https://github.com/juzzlin/Heimer

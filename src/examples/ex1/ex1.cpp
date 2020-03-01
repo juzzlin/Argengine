@@ -32,19 +32,19 @@ using juzzlin::Argengine;
 int main(int argc, char ** argv)
 {
     Argengine ae(argc, argv);
-    ae.addArgument(
+    ae.addOption(
       { "-a", "--arguments" }, [&] {
           for (int i = 0; i < argc; i++) {
               std::cout << argv[i] << std::endl;
           }
       },
       false, "Print arguments.");
-    ae.addArgument(
+    ae.addOption(
       { "-p" }, [](std::string value) {
           std::cout << value.size() << std::endl;
       },
       false, "Print length of given value.");
-    ae.addArgument(
+    ae.addOption(
       { "-r" }, [](std::string value) {
           std::cout << value.size() << std::endl;
       },

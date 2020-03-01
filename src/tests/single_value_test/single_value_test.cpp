@@ -42,7 +42,7 @@ void testSingleValue_NoValueGiven_ShouldFail()
 {
     Argengine ae({ "test", "-f" });
     bool called {};
-    ae.addArgument({ "-f" }, [&](std::string) {
+    ae.addOption({ "-f" }, [&](std::string) {
         called = true;
     });
     std::string error;
@@ -52,14 +52,14 @@ void testSingleValue_NoValueGiven_ShouldFail()
         error = e.what();
     }
     assert(!called);
-    assert(error == name + ": No value for argument '-f' given!");
+    assert(error == name + ": No value for option '-f' given!");
 }
 
 void testSingleValue_ValueGiven_ShouldSucceed()
 {
     Argengine ae({ "test", "-f", "42" });
     std::string f;
-    ae.addArgument({ "-f" }, [&](std::string value) {
+    ae.addOption({ "-f" }, [&](std::string value) {
         f = value;
     });
     std::string error;
@@ -71,10 +71,10 @@ void testSingleValue_ValueGivenWithAssignment_ShouldSucceed()
 {
     Argengine ae({ "test", "f=42", "g==" });
     std::string f, g;
-    ae.addArgument({ "f" }, [&](std::string value) {
+    ae.addOption({ "f" }, [&](std::string value) {
         f = value;
     });
-    ae.addArgument({ "g" }, [&](std::string value) {
+    ae.addOption({ "g" }, [&](std::string value) {
         g = value;
     });
     std::string error;
@@ -87,7 +87,7 @@ void testSingleValue_NoValueGivenWithAssignment_ShouldFail()
 {
     Argengine ae({ "test", "f=" });
     bool called {};
-    ae.addArgument({ "f" }, [&](std::string) {
+    ae.addOption({ "f" }, [&](std::string) {
         called = true;
     });
     std::string error;
@@ -97,20 +97,20 @@ void testSingleValue_NoValueGivenWithAssignment_ShouldFail()
         error = e.what();
     }
     assert(!called);
-    assert(error == name + ": No value for argument 'f' given!");
+    assert(error == name + ": No value for option 'f' given!");
 }
 
 void testSingleValue_MultipleValuesGivenWithAssignments_ShouldSucceed()
 {
     Argengine ae({ "test", "a=1", "bb=22", "ccc=333" });
     std::map<std::string, std::string> values;
-    ae.addArgument({ "a", "aa" }, [&](std::string value) {
+    ae.addOption({ "a", "aa" }, [&](std::string value) {
         values["a"] = value;
     });
-    ae.addArgument({ "bb" }, [&](std::string value) {
+    ae.addOption({ "bb" }, [&](std::string value) {
         values["bb"] = value;
     });
-    ae.addArgument({ "ccc" }, [&](std::string value) {
+    ae.addOption({ "ccc" }, [&](std::string value) {
         values["ccc"] = value;
     });
     std::string error;
@@ -125,7 +125,7 @@ void testSingleValue_NoValueGivenWithoutSpace_ShouldFail()
 {
     Argengine ae({ "test", "f" });
     bool called {};
-    ae.addArgument({ "f" }, [&](std::string) {
+    ae.addOption({ "f" }, [&](std::string) {
         called = true;
     });
     std::string error;
@@ -135,14 +135,14 @@ void testSingleValue_NoValueGivenWithoutSpace_ShouldFail()
         error = e.what();
     }
     assert(!called);
-    assert(error == name + ": No value for argument 'f' given!");
+    assert(error == name + ": No value for option 'f' given!");
 }
 
 void testSingleValue_ValueGivenWithoutSpace_ShouldSucceed()
 {
     Argengine ae({ "test", "-o1" });
     std::string o;
-    ae.addArgument({ "-o" }, [&](std::string value) {
+    ae.addOption({ "-o" }, [&](std::string value) {
         o = value;
     });
     std::string error;
@@ -154,13 +154,13 @@ void testSingleValue_MultipleValuesGivenWithoutSpaces_ShouldSucceed()
 {
     Argengine ae({ "test", "a1", "bb22", "ccc333" });
     std::map<std::string, std::string> values;
-    ae.addArgument({ "a", "aa" }, [&](std::string value) {
+    ae.addOption({ "a", "aa" }, [&](std::string value) {
         values["a"] = value;
     });
-    ae.addArgument({ "bb" }, [&](std::string value) {
+    ae.addOption({ "bb" }, [&](std::string value) {
         values["bb"] = value;
     });
-    ae.addArgument({ "ccc" }, [&](std::string value) {
+    ae.addOption({ "ccc" }, [&](std::string value) {
         values["ccc"] = value;
     });
     std::string error;
@@ -175,13 +175,13 @@ void testSingleValue_MultipleValueArguments_ShouldSucceed()
 {
     Argengine ae({ "test", "-a", "1", "-b", "2", "-c", "3" });
     std::map<std::string, std::string> values;
-    ae.addArgument({ "-a" }, [&](std::string value) {
+    ae.addOption({ "-a" }, [&](std::string value) {
         values["a"] = value;
     });
-    ae.addArgument({ "-b" }, [&](std::string value) {
+    ae.addOption({ "-b" }, [&](std::string value) {
         values["b"] = value;
     });
-    ae.addArgument({ "-c" }, [&](std::string value) {
+    ae.addOption({ "-c" }, [&](std::string value) {
         values["c"] = value;
     });
     std::string error;
@@ -194,7 +194,7 @@ void testSingleValue_MultipleValueArguments_ShouldSucceed()
 void testSingleValue_RequiredButNotGiven_ShouldFail()
 {
     Argengine ae({ "test" });
-    ae.addArgument(
+    ae.addOption(
       { "-f", "--foo" }, [](std::string) {
       },
       true);
@@ -206,20 +206,20 @@ void testSingleValue_RequiredButNotGiven_ShouldFail()
         error = e.what();
     }
 
-    assert(error == name + ": Argument '-f, --foo' is required!");
+    assert(error == name + ": Option '-f, --foo' is required!");
 }
 
 void testSingleValue_RequiredAndGiven_ShouldSucceed()
 {
     Argengine ae({ "test", "--foo", "42", "--bar=666" });
     std::string fooValue;
-    ae.addArgument(
+    ae.addOption(
       { "-f", "--foo" }, [&](std::string value) {
           fooValue = value;
       },
       true);
     std::string barValue;
-    ae.addArgument(
+    ae.addOption(
       { "-b", "--bar" }, [&](std::string value) {
           barValue = value;
       },
@@ -235,16 +235,16 @@ void testMixedArguments_MultipleArguments_ShouldSucceed()
 {
     Argengine ae({ "test", "-a", "1", "--bbb", "-c", "3", "-d444" });
     std::map<std::string, std::string> values;
-    ae.addArgument({ "-a" }, [&](std::string value) {
+    ae.addOption({ "-a" }, [&](std::string value) {
         values["a"] = value;
     });
-    ae.addArgument({ "--bbb" }, [&] {
+    ae.addOption({ "--bbb" }, [&] {
         values["bbb"] = "called";
     });
-    ae.addArgument({ "-c" }, [&](std::string value) {
+    ae.addOption({ "-c" }, [&](std::string value) {
         values["c"] = value;
     });
-    ae.addArgument({ "-d" }, [&](std::string value) {
+    ae.addOption({ "-d" }, [&](std::string value) {
         values["d"] = value;
     });
     ae.parse();
@@ -259,14 +259,14 @@ void testSameArgumentDefinedMultipleTimes_ShouldFail()
     Argengine ae({ "test", "-a", "1" });
     std::string error;
     try {
-        ae.addArgument({ "-a" }, [&](std::string) {
+        ae.addOption({ "-a" }, [&](std::string) {
         });
-        ae.addArgument({ "-a" }, [&] {
+        ae.addOption({ "-a" }, [&] {
         });
     } catch (std::runtime_error & e) {
         error = e.what();
     }
-    assert(error == name + ": Argument '-a' already defined!");
+    assert(error == name + ": Option '-a' already defined!");
 }
 
 int main(int, char **)

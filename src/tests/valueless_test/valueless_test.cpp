@@ -42,7 +42,7 @@ void testValueless_CallbackCalled_ShouldFail()
 {
     Argengine ae({ "test" });
     bool triggered {};
-    ae.addArgument({ "-f", "--foo" }, [&] {
+    ae.addOption({ "-f", "--foo" }, [&] {
         triggered = true;
     });
     ae.parse();
@@ -54,7 +54,7 @@ void testValueless_CallbackCalled_ShouldSucceed()
 {
     Argengine ae({ "test", "-f" });
     bool triggered {};
-    ae.addArgument({ "-f", "--foo" }, [&] {
+    ae.addOption({ "-f", "--foo" }, [&] {
         triggered = true;
     });
     ae.parse();
@@ -66,10 +66,10 @@ void testValueless_MultipleCallbacksCalled_ShouldSucceed()
 {
     Argengine ae({ "test", "-a", "--bbb", "--aaa", "-a", "-b" });
     std::map<std::string, size_t> triggered;
-    ae.addArgument({ "-a", "--aaa" }, [&] {
+    ae.addOption({ "-a", "--aaa" }, [&] {
         triggered["a"]++;
     });
-    ae.addArgument({ "-b", "--bbb" }, [&] {
+    ae.addOption({ "-b", "--bbb" }, [&] {
         triggered["b"]++;
     });
     ae.parse();
@@ -80,7 +80,7 @@ void testValueless_MultipleCallbacksCalled_ShouldSucceed()
 void testValueless_RequiredButNotGiven_ShouldFail()
 {
     Argengine ae({ "test" });
-    ae.addArgument(
+    ae.addOption(
       { "-f", "--foo" }, [&] {
       },
       true);
@@ -92,14 +92,14 @@ void testValueless_RequiredButNotGiven_ShouldFail()
         error = e.what();
     }
 
-    assert(error == name + ": Argument '-f, --foo' is required!");
+    assert(error == name + ": Option '-f, --foo' is required!");
 }
 
 void testValueless_RequiredAndGiven_ShouldSucceed()
 {
     Argengine ae({ "test", "--foo" });
     bool triggered {};
-    ae.addArgument(
+    ae.addOption(
       { "-f", "--foo" }, [&] {
           triggered = true;
       },

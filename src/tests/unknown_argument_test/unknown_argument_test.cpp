@@ -41,7 +41,7 @@ const std::string name = "Argengine";
 void testUnknownArgumentBehavior_ShouldThrow()
 {
     Argengine ae({ "test", "--foo2" });
-    ae.addArgument({ "--bar" }, [] {
+    ae.addOption({ "--bar" }, [] {
     });
 
     std::string error;
@@ -50,13 +50,13 @@ void testUnknownArgumentBehavior_ShouldThrow()
     } catch (std::runtime_error & e) {
         error = e.what();
     }
-    assert(error == name + ": Uknown argument '" + ae.arguments().at(1) + "'!");
+    assert(error == name + ": Uknown option '" + ae.arguments().at(1) + "'!");
 }
 
 void testUnknownArgument_SingleValueAssignment_ShouldThrow()
 {
     Argengine ae({ "test", "--foo=42" });
-    ae.addArgument({ "--bar" }, [](std::string) {
+    ae.addOption({ "--bar" }, [](std::string) {
     });
 
     std::string error;
@@ -65,7 +65,7 @@ void testUnknownArgument_SingleValueAssignment_ShouldThrow()
     } catch (std::runtime_error & e) {
         error = e.what();
     }
-    assert(error == name + ": Uknown argument '--foo=42'!");
+    assert(error == name + ": Uknown option '--foo=42'!");
 }
 
 int main(int, char **)

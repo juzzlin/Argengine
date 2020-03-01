@@ -43,12 +43,12 @@ void testDefaultHelpOverride_HelpActive_ShouldFail()
     Argengine ae({ "test" });
     std::string error;
     try {
-        ae.addArgument({ "-h" }, [&] {
+        ae.addOption({ "-h" }, [&] {
         });
     } catch (std::runtime_error & e) {
         error = e.what();
     }
-    assert(error == name + ": Argument '-h, --help' already defined!");
+    assert(error == name + ": Option '-h, --help' already defined!");
 }
 
 void testDefaultHelpOverride_HelpNotActive_ShouldSucceed()
@@ -56,7 +56,7 @@ void testDefaultHelpOverride_HelpNotActive_ShouldSucceed()
     Argengine ae({ "test" }, false);
     std::string error;
     try {
-        ae.addArgument({ "-h" }, [&] {
+        ae.addOption({ "-h" }, [&] {
         });
     } catch (std::runtime_error & e) {
         error = e.what();

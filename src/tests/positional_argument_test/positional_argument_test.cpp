@@ -52,9 +52,9 @@ void testSinglePositionalArgument_OtherArgumentsBefore_ShouldSucceed()
 {
     Argengine ae({ "test", "--foo", "-b", "a" });
     Argengine::ArgumentVector ps;
-    ae.addArgument({ "--foo" }, [] {
+    ae.addOption({ "--foo" }, [] {
     });
-    ae.addArgument({ "-b" }, [] {
+    ae.addOption({ "-b" }, [] {
     });
     ae.setPositionalArgumentCallback([&](Argengine::ArgumentVector args) {
         ps = args;
@@ -67,9 +67,9 @@ void testSinglePositionalArgument_OtherArgumentsAfter_ShouldSucceed()
 {
     Argengine ae({ "test", "a", "--foo", "-b" });
     Argengine::ArgumentVector ps;
-    ae.addArgument({ "--foo" }, [] {
+    ae.addOption({ "--foo" }, [] {
     });
-    ae.addArgument({ "-b" }, [] {
+    ae.addOption({ "-b" }, [] {
     });
     ae.setPositionalArgumentCallback([&](Argengine::ArgumentVector args) {
         ps = args;
@@ -82,9 +82,9 @@ void testSinglePositionalArgument_OtherArgumentsAround_ShouldSucceed()
 {
     Argengine ae({ "test", "--foo", "a", "-b" });
     Argengine::ArgumentVector ps;
-    ae.addArgument({ "--foo" }, [] {
+    ae.addOption({ "--foo" }, [] {
     });
-    ae.addArgument({ "-b" }, [] {
+    ae.addOption({ "-b" }, [] {
     });
     ae.setPositionalArgumentCallback([&](Argengine::ArgumentVector args) {
         ps = args;

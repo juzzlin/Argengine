@@ -49,17 +49,17 @@ public:
     }
 
 private:
-    struct ArgumentDefinition;
+    struct OptionDefinition;
 
 public:
-    std::shared_ptr<ArgumentDefinition> addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required, std::string infoText)
+    std::shared_ptr<OptionDefinition> addOption(OptionVariants optionVariants, ValuelessCallback callback, bool required, std::string infoText)
     {
-        return addArgumentCommon(argumentVariants, callback, required, infoText);
+        return addOptionCommon(optionVariants, callback, required, infoText);
     }
 
-    std::shared_ptr<ArgumentDefinition> addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required, std::string infoText)
+    std::shared_ptr<OptionDefinition> addOption(OptionVariants optionVariants, SingleStringCallback callback, bool required, std::string infoText)
     {
-        return addArgumentCommon(argumentVariants, callback, required, infoText);
+        return addOptionCommon(optionVariants, callback, required, infoText);
     }
 
     ArgumentVector arguments() const
@@ -98,14 +98,14 @@ public:
                << std::endl;
 
         if (m_helpSorting == HelpSorting::Ascending) {
-            std::sort(m_argumentDefinitions.begin(), m_argumentDefinitions.end(), [](const ArgumentDefinitionPtr & l, const ArgumentDefinitionPtr & r) {
+            std::sort(m_optionDefinitions.begin(), m_optionDefinitions.end(), [](const OptionDefinitionPtr & l, const OptionDefinitionPtr & r) {
                 return l->getVariantsString() < r->getVariantsString();
             });
         }
 
         std::vector<std::pair<std::string, std::string>> optionTexts;
         size_t maxLength = 0;
-        for (auto && option : m_argumentDefinitions) {
+        for (auto && option : m_optionDefinitions) {
             const auto variantsString = option->getVariantsString() + (option->singleStringCallback ? " [" + option->valuePlaceholder + "]" : "");
             maxLength = std::max(variantsString.size(), maxLength);
             optionTexts.push_back({ variantsString, option->infoText });
@@ -139,9 +139,9 @@ public:
     ~Impl() = default;
 
 private:
-    struct ArgumentDefinition
+    struct OptionDefinition
     {
-        ArgumentDefinition(const ArgumentVariants & variants, ValuelessCallback callback, bool required, std::string infoText)
+        OptionDefinition(const OptionVariants & variants, ValuelessCallback callback, bool required, std::string infoText)
           : variants(variants)
           , valuelessCallback(callback)
           , singleStringCallback(nullptr)
@@ -150,7 +150,7 @@ private:
         {
         }
 
-        ArgumentDefinition(const ArgumentVariants & variants, SingleStringCallback callback, bool required, std::string infoText)
+        OptionDefinition(const OptionVariants & variants, SingleStringCallback callback, bool required, std::string infoText)
           : variants(variants)
           , valuelessCallback(nullptr)
           , singleStringCallback(callback)
@@ -159,7 +159,7 @@ private:
         {
         }
 
-        bool isMatch(ArgumentVariants variants) const
+        bool isMatch(OptionVariants variants) const
         {
             for (auto && variant : variants) {
                 if (this->variants.count(variant)) {
@@ -182,7 +182,7 @@ private:
             return str;
         }
 
-        ArgumentVariants variants;
+        OptionVariants variants;
 
         ValuelessCallback valuelessCallback = nullptr;
 
@@ -200,14 +200,14 @@ private:
     };
 
     template<typename CallbackType>
-    std::shared_ptr<ArgumentDefinition> addArgumentCommon(ArgumentVariants argumentVariants, CallbackType callback, bool required, std::string infoText)
+    std::shared_ptr<OptionDefinition> addOptionCommon(OptionVariants optionVariants, CallbackType callback, bool required, std::string infoText)
     {
-        if (const auto existing = getArgumentDefinition(argumentVariants)) {
-            throwArgumentExistingError(*existing);
+        if (const auto existing = getOptionDefinition(optionVariants)) {
+            throwOptionExistingError(*existing);
         } else {
-            const auto argumentDefinition = std::make_shared<ArgumentDefinition>(argumentVariants, callback, required, infoText);
-            m_argumentDefinitions.push_back(argumentDefinition);
-            return argumentDefinition;
+            const auto optionDefinition = std::make_shared<OptionDefinition>(optionVariants, callback, required, infoText);
+            m_optionDefinitions.push_back(optionDefinition);
+            return optionDefinition;
         }
     }
 
@@ -215,7 +215,7 @@ private:
     {
         m_helpText = "Usage: " + m_args.at(0) + " [OPTIONS]";
 
-        const auto helpDefinition = addArgument(
+        const auto helpDefinition = addOption(
           { "-h", "--help" }, [=] {
               printHelp();
               exit(EXIT_SUCCESS);
@@ -227,17 +227,17 @@ private:
 
     void checkRequired()
     {
-        for (auto && definition : m_argumentDefinitions) {
+        for (auto && definition : m_optionDefinitions) {
             if (definition->required && !definition->applied) {
                 throwRequiredError(*definition);
             }
         }
     }
 
-    using ArgumentDefinitionPtr = std::shared_ptr<ArgumentDefinition>;
-    ArgumentDefinitionPtr getArgumentDefinition(ArgumentVariants variants) const
+    using OptionDefinitionPtr = std::shared_ptr<OptionDefinition>;
+    OptionDefinitionPtr getOptionDefinition(OptionVariants variants) const
     {
-        for (auto && definition : m_argumentDefinitions) {
+        for (auto && definition : m_optionDefinitions) {
             if (definition->isMatch(variants)) {
                 return definition;
             }
@@ -245,9 +245,9 @@ private:
         return nullptr;
     }
 
-    ArgumentDefinitionPtr getArgumentDefinition(std::string argument) const
+    OptionDefinitionPtr getOptionDefinition(std::string argument) const
     {
-        return getArgumentDefinition(ArgumentVariants { argument });
+        return getOptionDefinition(OptionVariants { argument });
     }
 
     std::string name() const
@@ -261,7 +261,7 @@ private:
         const auto pos = arg.find('=');
         if (pos != arg.npos) {
             assignmentFormatArg = arg.substr(0, pos);
-            const auto match = getArgumentDefinition(assignmentFormatArg);
+            const auto match = getOptionDefinition(assignmentFormatArg);
             if (match && match->singleStringCallback) {
                 const auto valueLength = arg.size() - (pos + 1);
                 if (!valueLength) {
@@ -275,8 +275,8 @@ private:
 
     std::pair<std::string, std::string> splitSpacelessFormat(std::string arg) const
     {
-        std::map<ArgumentDefinitionPtr, std::string> matchingDefinitions;
-        for (auto && definition : m_argumentDefinitions) {
+        std::map<OptionDefinitionPtr, std::string> matchingDefinitions;
+        for (auto && definition : m_optionDefinitions) {
             for (auto && variant : definition->variants) {
                 if (arg.find(variant) == 0) {
                     matchingDefinitions[definition] = variant;
@@ -333,7 +333,7 @@ private:
         // Process help first as it's a special case
         for (size_t i = 1; i < tokens.size(); i++) {
             const auto arg = tokens.at(i);
-            if (const auto definition = getArgumentDefinition(arg)) {
+            if (const auto definition = getOptionDefinition(arg)) {
                 if (definition->isHelp) {
                     i = processDefinitionMatch(definition, tokens, i, false);
                     break;
@@ -344,7 +344,7 @@ private:
         // Other arguments
         for (size_t i = 1; i < tokens.size(); i++) {
             const auto arg = tokens.at(i);
-            if (const auto definition = getArgumentDefinition(arg)) {
+            if (const auto definition = getOptionDefinition(arg)) {
                 if (!definition->isHelp) {
                     i = processDefinitionMatch(definition, tokens, i, dryRun);
                 }
@@ -362,7 +362,7 @@ private:
         }
     }
 
-    size_t processDefinitionMatch(ArgumentDefinitionPtr match, const ArgumentVector & tokens, size_t currentIndex, bool dryRun) const
+    size_t processDefinitionMatch(OptionDefinitionPtr match, const ArgumentVector & tokens, size_t currentIndex, bool dryRun) const
     {
         if (match->valuelessCallback) {
             if (!dryRun) {
@@ -373,7 +373,7 @@ private:
             if (++currentIndex < tokens.size()) {
                 if (!dryRun) {
                     const auto value = tokens.at(currentIndex);
-                    if (const auto innerMatch = getArgumentDefinition(value)) {
+                    if (const auto innerMatch = getOptionDefinition(value)) {
                         throwNoValueError(*match);
                     }
                     match->singleStringCallback(tokens.at(currentIndex));
@@ -386,24 +386,24 @@ private:
         return currentIndex;
     }
 
-    [[noreturn]] void throwArgumentExistingError(const ArgumentDefinition & existing) const
+    [[noreturn]] void throwOptionExistingError(const OptionDefinition & existing) const
     {
-        throw std::runtime_error(name() + ": Argument '" + existing.getVariantsString() + "' already defined!");
+        throw std::runtime_error(name() + ": Option '" + existing.getVariantsString() + "' already defined!");
     }
 
-    [[noreturn]] void throwRequiredError(const ArgumentDefinition & existing) const
+    [[noreturn]] void throwRequiredError(const OptionDefinition & existing) const
     {
-        throw std::runtime_error(name() + ": Argument '" + existing.getVariantsString() + "' is required!");
+        throw std::runtime_error(name() + ": Option '" + existing.getVariantsString() + "' is required!");
     }
 
     [[noreturn]] void throwUnknownArgumentError(std::string arg) const
     {
-        throw std::runtime_error(name() + ": Uknown argument '" + arg + "'!");
+        throw std::runtime_error(name() + ": Uknown option '" + arg + "'!");
     }
 
-    [[noreturn]] void throwNoValueError(const ArgumentDefinition & existing) const
+    [[noreturn]] void throwNoValueError(const OptionDefinition & existing) const
     {
-        throw std::runtime_error(name() + ": No value for argument '" + existing.getVariantsString() + "' given!");
+        throw std::runtime_error(name() + ": No value for option '" + existing.getVariantsString() + "' given!");
     }
 
     ArgumentVector m_args;
@@ -412,7 +412,7 @@ private:
 
     HelpSorting m_helpSorting = HelpSorting::None;
 
-    std::vector<ArgumentDefinitionPtr> m_argumentDefinitions;
+    std::vector<OptionDefinitionPtr> m_optionDefinitions;
 
     MultiStringCallback m_positionalArgumentCallback = nullptr;
 
@@ -431,19 +431,19 @@ Argengine::Argengine(ArgumentVector args, bool addDefaultHelp)
 {
 }
 
-void Argengine::addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required, std::string infoText)
+void Argengine::addOption(OptionVariants optionVariants, ValuelessCallback callback, bool required, std::string infoText)
 {
-    m_impl->addArgument(argumentVariants, callback, required, infoText);
+    m_impl->addOption(optionVariants, callback, required, infoText);
 }
 
-void Argengine::addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required, std::string infoText)
+void Argengine::addOption(OptionVariants optionVariants, SingleStringCallback callback, bool required, std::string infoText)
 {
-    m_impl->addArgument(argumentVariants, callback, required, infoText);
+    m_impl->addOption(optionVariants, callback, required, infoText);
 }
 
-void Argengine::addHelp(ArgumentVariants argumentVariants, ValuelessCallback callback)
+void Argengine::addHelp(OptionVariants optionVariants, ValuelessCallback callback)
 {
-    m_impl->addArgument(argumentVariants, callback, false, SHOW_THIS_HELP_TEXT)->isHelp = true;
+    m_impl->addOption(optionVariants, callback, false, SHOW_THIS_HELP_TEXT)->isHelp = true;
 }
 
 Argengine::ArgumentVector Argengine::arguments() const

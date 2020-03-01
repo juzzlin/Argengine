@@ -51,27 +51,27 @@ public:
     //! Destructor.
     ~Argengine();
 
-    //! Adds a valueless argument to the configuration.
-    //! \param argumentVariants A set of arguments for the given action, usually the short and long form: {"-f", "--foo"}
-    //! \param callback Callback to be called when the argument has been given. Signature: `void()`.
-    //! \param required If true, an error will follow if the argument is not present during parse().
+    //! Adds a valueless option to the configuration.
+    //! \param optionVariants A set of possible options for the given action, usually the short and long form: {"-f", "--foo"}
+    //! \param callback Callback to be called when the option has been given. Signature: `void()`.
+    //! \param required If true, an error will follow if the option is not present during parse().
     //! \param infoText Short info text shown in help/usage.
-    using ArgumentVariants = std::set<std::string>;
+    using OptionVariants = std::set<std::string>;
     using ValuelessCallback = std::function<void()>;
-    void addArgument(ArgumentVariants argumentVariants, ValuelessCallback callback, bool required = false, std::string infoText = "");
+    void addOption(OptionVariants optionVariants, ValuelessCallback callback, bool required = false, std::string infoText = "");
 
-    //! Adds an argument with a single value to the configuration.
-    //! \param argumentVariants A set of arguments for the given action, usually the short and long form: {"-f", "--foo"}
-    //! \param callback Callback to be called when the argument has been given with a value. Signature: `void(std::string)`.
-    //! \param required \see addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required).
+    //! Adds an option with a single value to the configuration.
+    //! \param optionVariants A set of possible options for the given action, usually the short and long form: {"-f", "--foo"}
+    //! \param callback Callback to be called when the option has been given with a value. Signature: `void(std::string)`.
+    //! \param required \see addOption(OptionVariants optionVariants, SingleStringCallback callback, bool required).
     //! \param infoText Short info text shown in help/usage.
     using SingleStringCallback = std::function<void(std::string)>;
-    void addArgument(ArgumentVariants argumentVariants, SingleStringCallback callback, bool required = false, std::string infoText = "");
+    void addOption(OptionVariants optionVariants, SingleStringCallback callback, bool required = false, std::string infoText = "");
 
-    //! Special method to add custom help. Help is always executed first if present.
-    //! \param argumentVariants A set of arguments for the given action, usually the short and long form: {"-h", "--help"}
-    //! \param callback Callback to be called when the argument has been given. Signature: `void()`.
-    void addHelp(ArgumentVariants argumentVariants, ValuelessCallback callback);
+    //! Special method to add custom help / decorate output of `printHelp()`. Help is always executed first if present.
+    //! \param optionVariants A set of possible options for help, usually the short and long form: {"-h", "--help"}
+    //! \param callback Callback to be called when the help option has been given. Signature: `void()`.
+    void addHelp(OptionVariants optionVariants, ValuelessCallback callback);
 
     //! \return All given arguments.
     ArgumentVector arguments() const;
