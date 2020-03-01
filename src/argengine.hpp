@@ -124,6 +124,9 @@ public:
     //! Prints help/usage.
     void printHelp();
 
+    //! \return Library version in x.y.z
+    static std::string version();
+
 private:
     Argengine(const Argengine & r) = delete;
     Argengine & operator=(const Argengine & r) = delete;

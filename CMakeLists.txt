@@ -9,11 +9,6 @@ option(BUILD_TESTS "Build unit tests" ON)
 
 option(BUILD_EXAMPLES "Build example apps" ON)
 
-set(ARGENGINE_VERSION_MAJOR "0")
-set(ARGENGINE_VERSION_MINOR "0")
-set(ARGENGINE_VERSION_PATCH "1")
-set(ARGENGINE_VERSION "${ARGENGINE_VERSION_MAJOR}.${ARGENGINE_VERSION_MINOR}.${ARGENGINE_VERSION_PATCH}")
-
 enable_testing()
 
 # Default to release C++ flags if CMAKE_BUILD_TYPE not set
