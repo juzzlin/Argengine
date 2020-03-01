@@ -94,6 +94,22 @@ There can be as many argument variants as liked, usually the short and long vers
 
 Argengine doesn't care about the naming of the arguments and they can be anything: `-f`, `a`, `/c`, `foo`, `--foo`..
 
+Positional arguments (for example a file name for a text editor after other options) can be received with a single callback:
+
+```
+    ...
+
+    juzzlin::Argengine ae(argc, argv);
+    ae.setPositionalArgumentCallback([] (std::vector<std::string> args) {
+        // Do something with arguments
+    });
+    ae.parse();
+
+    ...
+```
+
+If callback for positional arguments is set, then no errors about `unknown arguments` will occur as all additional arguments will be taken as positional arguments.
+
 # Examples
 
 ## Valueless arguments: The simplest possible example
@@ -111,36 +127,6 @@ int main(int argc, char ** argv)
         std::cout << "'-f' or '--foo' given!"  << std::endl;
     });
     ae.parse();
-
-    return 0;
-}
-```
-
-## Valueless arguments: Set a flag when set
-
-Flags can be set by using standard lambda captures:
-
-```
-#include "argengine.hpp"
-#include <iostream>
-
-int main(int argc, char ** argv)
-{
-    juzzlin::Argengine ae(argc, argv);
-
-    bool fooSet {};
-    ae.addArgument({"-f", "--foo"}, [&] {
-        fooSet = true;
-    });
-
-    bool barSet {};
-    ae.addArgument({"--bar"}, [&] {
-        barSet = true;
-    });
-
-    ae.parse();
-
-    std::cout << fooSet << " " << barSet << std::endl;
 
     return 0;
 }
@@ -188,18 +174,41 @@ In order to mark an argument mandatory, there's an overload that accepts `bool r
     ...
 ```
 
-## General: Handling unknown arguments
+## General: Error handling
 
-For the handling of unknown arguments there are three modes: `Ignore`, `Warn`, and `Throw`. The default is `Warn`.
+For error handling there are two options: exceptions or error value.
 
-This can be selected with `Argengine::setUnknownArgumentBehavior(UnknownArgumentBehavior behavior)`:
+`Argengine::parse()` will throw on error, `Argengine::parse(Error & error)` will set and error.
+
+Example of handling exceptions:
 
 ```
     ...
 
-    using juzzlin::Argengine;
-    Argengine ae(argc, argv);
-    ae.setUnknownArgumentBehavior(Argengine::UnknownArgumentBehavior::Throw);
+    try {
+        ae.parse();
+    } catch(std::runtime_error & e) {
+        std::cerr << e.what() << std::endl;
+        ae.printHelp();
+        return EXIT_FAILURE;
+    }
+
+    ...
+```
+
+Example of handling error values:
+
+```
+    ...
+    Argengine::Error error;
+    ae.parse(error);
+
+    if (error.code != Argengine::Error::Code::Ok) {
+        std::cerr << error.message << std::endl
+                  << std::endl;
+        ae.printHelp();
+        return EXIT_FAILURE;
+    }
 
     ...
 ```
