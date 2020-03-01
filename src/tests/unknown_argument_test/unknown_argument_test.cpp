@@ -65,7 +65,7 @@ void testUnknownArgument_SingleValueAssignment_ShouldThrow()
     } catch (std::runtime_error & e) {
         error = e.what();
     }
-    assert(error == name + ": Uknown argument '--foo'!");
+    assert(error == name + ": Uknown argument '--foo=42'!");
 }
 
 int main(int, char **)

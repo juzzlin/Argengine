@@ -70,8 +70,9 @@ void testDefaultHelp_PrintToStream_ShouldSucceed()
     std::stringstream ss;
     ae.setOutputStream(ss);
     ae.printHelp();
-
-    assert(ss.str() == "Usage: " + ae.arguments().at(0) + " [OPTIONS]\n\nOptions:\n\n");
+    const std::string answer = "Usage: " + ae.arguments().at(0) + " [OPTIONS]\n\nOptions:\n\n" + //
+      "-h, --help  Show this help.\n\n";
+    assert(ss.str() == answer);
 }
 
 void testDefaultHelp_ClearHelpText_ShouldSucceed()
@@ -81,8 +82,8 @@ void testDefaultHelp_ClearHelpText_ShouldSucceed()
     ae.setOutputStream(ss);
     ae.setHelpText("");
     ae.printHelp();
-
-    assert(ss.str() == "Options:\n\n");
+    const std::string answer = "Options:\n\n-h, --help  Show this help.\n\n";
+    assert(ss.str() == answer);
 }
 
 int main(int, char **)
