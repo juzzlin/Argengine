@@ -328,6 +328,7 @@ private:
     void processArgs(bool dryRun)
     {
         const auto tokens = tokenize(m_args);
+        ArgumentVector positionalArguments;
 
         // Process help first as it's a special case
         for (size_t i = 1; i < tokens.size(); i++) {
@@ -348,8 +349,16 @@ private:
                     i = processDefinitionMatch(definition, tokens, i, dryRun);
                 }
             } else {
-                throwUnknownArgumentError(arg);
+                if (m_positionalArgumentCallback) {
+                    positionalArguments.push_back(arg);
+                } else {
+                    throwUnknownArgumentError(arg);
+                }
             }
+        }
+
+        if (!positionalArguments.empty() && m_positionalArgumentCallback) {
+            m_positionalArgumentCallback(positionalArguments);
         }
     }
 
