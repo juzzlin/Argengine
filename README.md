@@ -92,7 +92,7 @@ Single value:
 
 There can be as many argument variants as liked, usually the short and long version e.g `-f` and `--foo`.
 
-Argengine doesn't care about the naming of the options and they can be anything: `-f`, `a`, `/c`, `foo`, `--foo`..
+`Argengine` doesn't care about the naming of the options and they can be anything: `-f`, `a`, `/c`, `foo`, `--foo` ...
 
 Positional arguments (for example a file name for a text editor after other options) can be received with a single callback:
 
@@ -110,6 +110,44 @@ Positional arguments (for example a file name for a text editor after other opti
 
 If callback for positional arguments is set, then no errors about `unknown options` will occur as all additional options will be taken as positional arguments.
 
+# Help
+
+By default, `Argengine` will create a simple help that is shown with `-h` or `--help`.
+
+Without any additional options possible output will look like this:
+
+```
+Usage: ./ex1 [OPTIONS]
+
+Options:
+
+-h, --help  Show this help.
+```
+
+The help can be manually printed with `Argengine::printHelp()`.
+
+The default help can be disabled by constructing `Argengine` with `Argengine::Argengine(argc, argv, false)`.
+
+## Custom help
+
+A custom help can be added with:
+
+`void Argengine::addHelp(OptionVariants optionVariants, ValuelessCallback callback)`
+
+You'd still very likely want to call `Argengine::printHelp()` in the callback and just add some stuff around it.
+
+## Sorting order of options
+
+The sorting order of options can be selected with:
+
+`void Argengine::setHelpSorting(HelpSorting helpSorting)`
+
+## Custom help text
+
+The text printed before options can be set with:
+
+`void Argengine::setHelpText(std::string helpText)`
+
 # Examples
 
 ## Valueless options: The simplest possible example
@@ -117,7 +155,7 @@ If callback for positional arguments is set, then no errors about `unknown optio
 Valueless options are options without any value, so they are just flags. The lambda callback is of the form `[] {}`.
 
 ```
-#include "argengine.hpp"
+#include "`Argengine`.hpp"
 #include <iostream>
 
 int main(int argc, char ** argv)
@@ -143,7 +181,7 @@ Preferably there should be either space or '`=`'. The spaceless format is accept
 The lambda callback is of the form `[] (std::string value) {}`.
 
 ```
-#include "argengine.hpp"
+#include "`Argengine`.hpp"
 #include <iostream>
 
 int main(int argc, char ** argv)
@@ -200,10 +238,10 @@ Example of handling error values:
 
 ```
     ...
-    Argengine::Error error;
+    `Argengine`::Error error;
     ae.parse(error);
 
-    if (error.code != Argengine::Error::Code::Ok) {
+    if (error.code != `Argengine`::Error::Code::Ok) {
         std::cerr << error.message << std::endl
                   << std::endl;
         ae.printHelp();
