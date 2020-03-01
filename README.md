@@ -90,7 +90,7 @@ Single value:
     ...
 ```
 
-There can be as many argument variants as liked, usually the short and long version e.g `-f` and `--foo`.
+There can be as many option variants as liked, usually the short and long version e.g `-f` and `--foo`.
 
 `Argengine` doesn't care about the naming of the options and they can be anything: `-f`, `a`, `/c`, `foo`, `--foo` ...
 
@@ -155,7 +155,7 @@ The text printed before options can be set with:
 Valueless options are options without any value, so they are just flags. The lambda callback is of the form `[] {}`.
 
 ```
-#include "`Argengine`.hpp"
+#include "argengine.hpp"
 #include <iostream>
 
 int main(int argc, char ** argv)
@@ -181,7 +181,7 @@ Preferably there should be either space or '`=`'. The spaceless format is accept
 The lambda callback is of the form `[] (std::string value) {}`.
 
 ```
-#include "`Argengine`.hpp"
+#include "argengine.hpp"
 #include <iostream>
 
 int main(int argc, char ** argv)
@@ -238,10 +238,10 @@ Example of handling error values:
 
 ```
     ...
-    `Argengine`::Error error;
+    Argengine::Error error;
     ae.parse(error);
 
-    if (error.code != `Argengine`::Error::Code::Ok) {
+    if (error.code != Argengine::Error::Code::Ok) {
         std::cerr << error.message << std::endl
                   << std::endl;
         ae.printHelp();
