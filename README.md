@@ -76,7 +76,7 @@ Valueless:
     ...
 ```
 
-Single value:
+Single-value:
 
 ```
     ...
@@ -170,9 +170,9 @@ int main(int argc, char ** argv)
 }
 ```
 
-## Single value options: The simplest possible example
+## Single-value options: The simplest possible example
 
-Single value options are options that can have only one value.
+Single-value options are options that can have only one value.
 
 As an example, for option `-f` The following formats are allowed: `-f 42`, `-f42`, `-f=42`.
 
