@@ -262,3 +262,9 @@ C++11
 # Licence
 
 MIT
+
+# Projects currently using Argengine
+
+* https://github.com/juzzlin/DustRacing2D
+
+* https://github.com/juzzlin/Heimer
