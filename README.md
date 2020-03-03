@@ -39,7 +39,7 @@ include_directories(Argengine/src)
 Link to the library:
 
 ```
-target_link_libraries(${YOUR_TARGET_NAME} Argengine)
+target_link_libraries(${YOUR_TARGET_NAME} Argengine_static)
 ```
 
 In your code:

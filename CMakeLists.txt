@@ -3,9 +3,9 @@ project(Argengine)
 cmake_minimum_required(VERSION 2.8.12)
 cmake_policy(VERSION 2.8.12)
 
-option(BUILD_TESTS "Build unit tests" ON)
-
 option(BUILD_EXAMPLES "Build example apps" ON)
+
+option(BUILD_TESTS "Build unit tests" ON)
 
 # Default to release C++ flags if CMAKE_BUILD_TYPE not set
 if(NOT CMAKE_BUILD_TYPE)
