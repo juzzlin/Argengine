@@ -3,8 +3,6 @@ project(Argengine)
 cmake_minimum_required(VERSION 2.8.12)
 cmake_policy(VERSION 2.8.12)
 
-option(ARGENGINE_SHARED_LIB "Build a shared library" OFF)
-
 option(BUILD_TESTS "Build unit tests" ON)
 
 option(BUILD_EXAMPLES "Build example apps" ON)
