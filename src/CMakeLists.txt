@@ -25,10 +25,6 @@ install(TARGETS ${STATIC_LIBRARY_NAME}
     PUBLIC_HEADER DESTINATION include
 )
 
-if(BUILD_TESTS)
-    add_subdirectory(tests)
-endif()
-
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
