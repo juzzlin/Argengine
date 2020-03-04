@@ -43,12 +43,7 @@ int main(int argc, char ** argv)
       { "-p" }, [](std::string value) {
           std::cout << value.size() << std::endl;
       },
-      false, "Print length of given value.");
-    ae.addOption(
-      { "-r" }, [](std::string value) {
-          std::cout << value.size() << std::endl;
-      },
-      true, "This is required.");
+      true, "Print length of given text. This is required", "TEXT");
 
     Argengine::Error error;
     ae.parse(error);

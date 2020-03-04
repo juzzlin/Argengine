@@ -65,8 +65,9 @@ public:
     //! \param callback Callback to be called when the option has been given with a value. Signature: `void(std::string)`.
     //! \param required \see addOption(OptionVariants optionVariants, SingleStringCallback callback, bool required).
     //! \param infoText Short info text shown in help/usage.
+    //! \param valueName Name of the value in help.
     using SingleStringCallback = std::function<void(std::string)>;
-    void addOption(OptionVariants optionVariants, SingleStringCallback callback, bool required = false, std::string infoText = "");
+    void addOption(OptionVariants optionVariants, SingleStringCallback callback, bool required = false, std::string infoText = "", std::string valueName = "VALUE");
 
     //! Special method to add custom help / decorate output of `printHelp()`. Help is always executed first if present.
     //! \param optionVariants A set of possible options for help, usually the short and long form: {"-h", "--help"}

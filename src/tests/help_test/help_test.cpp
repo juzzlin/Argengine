@@ -82,7 +82,23 @@ void testDefaultHelp_ClearHelpText_ShouldSucceed()
     ae.setOutputStream(ss);
     ae.setHelpText("");
     ae.printHelp();
-    const std::string answer = "Options:\n\n-h, --help  Show this help.\n\n";
+    const std::string answer = "Options:\n\n"
+                               "-h, --help  Show this help.\n\n";
+    assert(ss.str() == answer);
+}
+
+void testDefaultHelp_SingleValueOptionAdded_ShouldSucceed()
+{
+    Argengine ae({ "test" });
+    std::stringstream ss;
+    ae.addOption(
+      { "-f", "--foo" }, [](std::string) {}, false, "Add foo.", "FOO");
+    ae.setOutputStream(ss);
+    ae.printHelp();
+    const std::string answer = "Usage: test [OPTIONS]\n\n"
+                               "Options:\n\n"
+                               "-h, --help       Show this help.\n"
+                               "-f, --foo [FOO]  Add foo.\n\n";
     assert(ss.str() == answer);
 }
 
@@ -95,6 +111,8 @@ int main(int, char **)
     testDefaultHelp_PrintToStream_ShouldSucceed();
 
     testDefaultHelp_ClearHelpText_ShouldSucceed();
+
+    testDefaultHelp_SingleValueOptionAdded_ShouldSucceed();
 
     return EXIT_SUCCESS;
 }

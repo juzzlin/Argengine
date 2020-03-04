@@ -57,9 +57,11 @@ public:
         return addOptionCommon(optionVariants, callback, required, infoText);
     }
 
-    std::shared_ptr<OptionDefinition> addOption(OptionVariants optionVariants, SingleStringCallback callback, bool required, std::string infoText)
+    std::shared_ptr<OptionDefinition> addOption(OptionVariants optionVariants, SingleStringCallback callback, bool required, std::string infoText, std::string valueName)
     {
-        return addOptionCommon(optionVariants, callback, required, infoText);
+        const auto od = addOptionCommon(optionVariants, callback, required, infoText);
+        od->valueName = valueName;
+        return od;
     }
 
     ArgumentVector arguments() const
@@ -106,7 +108,7 @@ public:
         std::vector<std::pair<std::string, std::string>> optionTexts;
         size_t maxLength = 0;
         for (auto && option : m_optionDefinitions) {
-            const auto variantsString = option->getVariantsString() + (option->singleStringCallback ? " [" + option->valuePlaceholder + "]" : "");
+            const auto variantsString = option->getVariantsString() + (option->singleStringCallback ? " [" + option->valueName + "]" : "");
             maxLength = std::max(variantsString.size(), maxLength);
             optionTexts.push_back({ variantsString, option->infoText });
         }
@@ -196,7 +198,7 @@ private:
 
         std::string infoText;
 
-        std::string valuePlaceholder = "VALUE";
+        std::string valueName = "VALUE";
     };
 
     template<typename CallbackType>
@@ -436,9 +438,9 @@ void Argengine::addOption(OptionVariants optionVariants, ValuelessCallback callb
     m_impl->addOption(optionVariants, callback, required, infoText);
 }
 
-void Argengine::addOption(OptionVariants optionVariants, SingleStringCallback callback, bool required, std::string infoText)
+void Argengine::addOption(OptionVariants optionVariants, SingleStringCallback callback, bool required, std::string infoText, std::string valueName)
 {
-    m_impl->addOption(optionVariants, callback, required, infoText);
+    m_impl->addOption(optionVariants, callback, required, infoText, valueName);
 }
 
 void Argengine::addHelp(OptionVariants optionVariants, ValuelessCallback callback)
