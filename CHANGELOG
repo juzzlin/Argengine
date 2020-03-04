@@ -4,6 +4,7 @@ x.y.z
 New features:
 
 * Fix GitHub Issue #2: Configurable value names for help
+* Add getter for help text
 
 Bug fixes:
 

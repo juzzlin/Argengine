@@ -102,6 +102,14 @@ void testDefaultHelp_SingleValueOptionAdded_ShouldSucceed()
     assert(ss.str() == answer);
 }
 
+void testSetGetHelpText_ShouldSucceed()
+{
+    Argengine ae({ "test" });
+    assert(ae.helpText() == "Usage: test [OPTIONS]");
+    ae.setHelpText("Foo");
+    assert(ae.helpText() == "Foo");
+}
+
 int main(int, char **)
 {
     testDefaultHelpOverride_HelpActive_ShouldFail();
@@ -113,6 +121,8 @@ int main(int, char **)
     testDefaultHelp_ClearHelpText_ShouldSucceed();
 
     testDefaultHelp_SingleValueOptionAdded_ShouldSucceed();
+
+    testSetGetHelpText_ShouldSucceed();
 
     return EXIT_SUCCESS;
 }

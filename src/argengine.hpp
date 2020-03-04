@@ -81,6 +81,9 @@ public:
     //! \param helpText Text shown in help. E.g. "MyApplication v1.0.0, Copyright (c) 2020 Foo Bar".
     void setHelpText(std::string helpText);
 
+    //! \return The current help text.
+    std::string helpText() const;
+
     //! Sorting order of arguments in help.
     enum class HelpSorting
     {

@@ -79,6 +79,11 @@ public:
         m_helpText = helpText;
     }
 
+    std::string helpText() const
+    {
+        return m_helpText;
+    }
+
     void setHelpSorting(HelpSorting helpSorting)
     {
         m_helpSorting = helpSorting;
@@ -456,6 +461,11 @@ Argengine::ArgumentVector Argengine::arguments() const
 void Argengine::setHelpText(std::string helpText)
 {
     m_impl->setHelpText(helpText);
+}
+
+std::string Argengine::helpText() const
+{
+    return m_impl->helpText();
 }
 
 void Argengine::setHelpSorting(HelpSorting helpSorting)
