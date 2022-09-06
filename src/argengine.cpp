@@ -405,7 +405,7 @@ private:
 
     [[noreturn]] void throwUnknownArgumentError(std::string arg) const
     {
-        throw std::runtime_error(name() + ": Uknown option '" + arg + "'!");
+        throw std::runtime_error(name() + ": Unknown option '" + arg + "'!");
     }
 
     [[noreturn]] void throwNoValueError(const OptionDefinition & existing) const

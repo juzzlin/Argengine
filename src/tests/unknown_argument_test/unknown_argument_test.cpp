@@ -50,7 +50,7 @@ void testUnknownArgumentBehavior_ShouldThrow()
     } catch (std::runtime_error & e) {
         error = e.what();
     }
-    assert(error == name + ": Uknown option '" + ae.arguments().at(1) + "'!");
+    assert(error == name + ": Unknown option '" + ae.arguments().at(1) + "'!");
 }
 
 void testUnknownArgument_SingleValueAssignment_ShouldThrow()
@@ -65,7 +65,7 @@ void testUnknownArgument_SingleValueAssignment_ShouldThrow()
     } catch (std::runtime_error & e) {
         error = e.what();
     }
-    assert(error == name + ": Uknown option '--foo=42'!");
+    assert(error == name + ": Unknown option '--foo=42'!");
 }
 
 int main(int, char **)
