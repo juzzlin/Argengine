@@ -216,6 +216,37 @@ In order to mark an option mandatory, there's an overload that accepts `bool req
     ...
 ```
 
+## General: Adding option documentation for the auto-generated help
+
+One can add option documentation for the auto-generated help.
+
+Consider this example code:
+
+```
+    ...
+
+    juzzlin::Argengine ae(argc, argv);
+    ae.addOption(
+      { "-p" }, [](std::string value) {
+          std::cout << value.size() << std::endl;
+      },
+      true, "Print length of given text. This option is required.", "TEXT");
+
+    ...
+```
+
+Here we have added a documentation string `Print length of given text. This option is required.` and also a variable name `TEXT` for option `-p`.
+
+Thus, this will generate a help content like this:
+
+```
+Options:
+
+-h, --help       Show this help.
+-p [TEXT]        Print length of given text. This option is required.
+
+```
+
 ## General: Error handling
 
 For error handling there are two options: exceptions or error value.
