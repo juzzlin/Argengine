@@ -1,11 +1,29 @@
 x.y.z
 =====
 
+Release date:
+
 New features:
 
 Bug fixes:
 
 Other:
+
+1.1.1
+=====
+
+Release date:
+
+Tue, 06 Sep 2022 18:30:37 -0000
+
+Bug fixes:
+
+* Fix typo in the unknown option error message
+
+Other:
+
+* Fix GitHub Issue #5: Add documentation of option info texts
+* Update documentation of ex1
 
 1.1.0
 =====
