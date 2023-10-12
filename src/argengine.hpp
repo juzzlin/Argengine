@@ -74,6 +74,11 @@ public:
     //! \param callback Callback to be called when the help option has been given. Signature: `void()`.
     void addHelp(OptionVariants optionVariants, ValuelessCallback callback);
 
+    //! Adds a options that cannot coexist.
+    //! \param conflictingOptions A set of possible options that cannot coexist, e.g.: {"--bar", "--foo"}
+    using ConflictingOptionSet = std::set<std::string>;
+    void addConflictingOptions(ConflictingOptionSet conflictingOptionSet);
+
     //! \return All given arguments.
     ArgumentVector arguments() const;
 

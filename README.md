@@ -247,6 +247,38 @@ Options:
 
 ```
 
+## General: Setting two or more options as conflicting
+
+Sometimes we want to prevent the user from giving a certain set of arguments.
+
+Consider this example code:
+
+```
+    ...
+
+    juzzlin::Argengine ae(argc, argv);
+    ae.addOption(
+      { "foo" }, [] {
+          std::cout << "Foo enabled!" << std::endl;
+      });
+
+    ae.addOption(
+      { "bar" }, [] {
+          std::cout << "Bar enabled!" << std::endl;
+      });
+
+    // Set "foo" and "bar" as conflicting options.
+    ae.addConflictingOptions({ "foo", "bar" });
+    ...
+```
+
+Now, if we give both `foo` and `bar` to the application, we'll get an error like this:
+
+
+```
+Argengine: Conflicting options: 'bar', 'foo'. These options cannot coexist.
+```
+
 ## General: Error handling
 
 For error handling there are two options: exceptions or error value.

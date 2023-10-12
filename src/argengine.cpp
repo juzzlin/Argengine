@@ -64,6 +64,11 @@ public:
         return od;
     }
 
+    void addConflictingOptions(ConflictingOptionSet conflictingOptionSet)
+    {
+        m_conflictingOptionSets.push_back(conflictingOptionSet);
+    }
+
     ArgumentVector arguments() const
     {
         return m_args;
@@ -327,10 +332,34 @@ private:
         return tokens;
     }
 
+    void checkConflictingOptions(const ArgumentVector & tokens)
+    {
+        OptionDefinitionVector optionDefinitions;
+        for (size_t i = 1; i < tokens.size(); i++) {
+            if (const auto arg = tokens.at(i); const auto definition = getOptionDefinition(arg)) {
+                optionDefinitions.push_back(definition);
+            }
+        }
+        for (auto && conflictingOptionSet : m_conflictingOptionSets) {
+            ConflictingOptionSet conflictingOptionSetForError;
+            for (auto && conflictingOption : conflictingOptionSet) {
+                for (auto && optionDefinition : optionDefinitions) {
+                    if (optionDefinition->matches({ conflictingOption })) {
+                        conflictingOptionSetForError.insert(conflictingOption);
+                    }
+                }
+            }
+            if (conflictingOptionSetForError.size() > 1) {
+                throwConflictingOptionsError(conflictingOptionSetForError);
+            }
+        }
+    }
+
     void processArgs(bool dryRun)
     {
         const auto tokens = tokenize(m_args);
-        ArgumentVector positionalArguments;
+
+        checkConflictingOptions(tokens);
 
         // Process help first as it's a special case
         for (size_t i = 1; i < tokens.size(); i++) {
@@ -343,6 +372,7 @@ private:
         }
 
         // Other arguments
+        ArgumentVector positionalArguments;
         for (size_t i = 1; i < tokens.size(); i++) {
             if (const auto arg = tokens.at(i); const auto definition = getOptionDefinition(arg)) {
                 if (!definition->isHelp) {
@@ -385,6 +415,18 @@ private:
         return currentIndex;
     }
 
+    [[noreturn]] void throwConflictingOptionsError(const ConflictingOptionSet & conflictingOptionSet) const
+    {
+        std::string optionsString;
+        for (auto && option : conflictingOptionSet) {
+            if (!optionsString.empty() && optionsString.back() == '\'') {
+                optionsString += ", ";
+            }
+            optionsString += "'" + option + "'";
+        }
+        throw std::runtime_error(name() + ": Conflicting options: " + optionsString + ". These options cannot coexist.");
+    }
+
     [[noreturn]] void throwOptionExistingError(const OptionDefinition & existing) const
     {
         throw std::runtime_error(name() + ": Option '" + existing.getVariantsString() + "' already defined!");
@@ -411,7 +453,10 @@ private:
 
     HelpSorting m_helpSorting = HelpSorting::None;
 
-    std::vector<OptionDefinitionPtr> m_optionDefinitions;
+    using OptionDefinitionVector = std::vector<OptionDefinitionPtr>;
+    OptionDefinitionVector m_optionDefinitions;
+
+    std::vector<ConflictingOptionSet> m_conflictingOptionSets;
 
     MultiStringCallback m_positionalArgumentCallback = nullptr;
 
@@ -443,6 +488,11 @@ void Argengine::addOption(OptionVariants optionVariants, SingleStringCallback ca
 void Argengine::addHelp(OptionVariants optionVariants, ValuelessCallback callback)
 {
     m_impl->addOption(optionVariants, callback, false, SHOW_THIS_HELP_TEXT)->isHelp = true;
+}
+
+void Argengine::addConflictingOptions(ConflictingOptionSet conflictingOptionSet)
+{
+    m_impl->addConflictingOptions(conflictingOptionSet);
 }
 
 Argengine::ArgumentVector Argengine::arguments() const
