@@ -31,7 +31,7 @@
 
 namespace juzzlin {
 
-const std::string SHOW_THIS_HELP_TEXT = "Show this help.";
+const auto SHOW_THIS_HELP_TEXT = "Show this help.";
 
 class Argengine::Impl
 {
@@ -342,7 +342,7 @@ private:
             const auto arg = tokens.at(i);
             if (const auto definition = getOptionDefinition(arg)) {
                 if (definition->isHelp) {
-                    i = processDefinitionMatch(definition, tokens, i, false);
+                    processDefinitionMatch(definition, tokens, i, false);
                     break;
                 }
             }
