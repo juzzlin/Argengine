@@ -166,7 +166,7 @@ private:
         {
         }
 
-        bool isMatch(OptionVariants variants) const
+        bool matches(OptionVariants variants) const
         {
             for (auto && variant : variants) {
                 if (this->variants.count(variant)) {
@@ -245,7 +245,7 @@ private:
     OptionDefinitionPtr getOptionDefinition(OptionVariants variants) const
     {
         for (auto && definition : m_optionDefinitions) {
-            if (definition->isMatch(variants)) {
+            if (definition->matches(variants)) {
                 return definition;
             }
         }
@@ -265,16 +265,14 @@ private:
     std::pair<std::string, std::string> splitAssignmentFormat(std::string arg) const
     {
         std::string assignmentFormatArg;
-        const auto pos = arg.find('=');
-        if (pos != arg.npos) {
+        if (const auto pos = arg.find('='); pos != arg.npos) {
             assignmentFormatArg = arg.substr(0, pos);
-            const auto match = getOptionDefinition(assignmentFormatArg);
-            if (match && match->singleStringCallback) {
-                const auto valueLength = arg.size() - (pos + 1);
-                if (!valueLength) {
+            if (const auto match = getOptionDefinition(assignmentFormatArg); match && match->singleStringCallback) {
+                if (const auto valueLength = arg.size() - (pos + 1); !valueLength) {
                     return { assignmentFormatArg, "" };
+                } else {
+                    return { assignmentFormatArg, arg.substr(pos + 1, valueLength) };
                 }
-                return { assignmentFormatArg, arg.substr(pos + 1, valueLength) };
             }
         }
         return {};
@@ -291,15 +289,14 @@ private:
             }
         }
         if (matchingDefinitions.size() == 1) {
-            const auto match = matchingDefinitions.begin()->first;
-            if (match && match->singleStringCallback) {
+            if (const auto match = matchingDefinitions.begin()->first; match && match->singleStringCallback) {
                 const auto spacelessArg = matchingDefinitions.begin()->second;
                 const auto pos = spacelessArg.size();
-                const auto valueLength = arg.size() - pos;
-                if (!valueLength) {
+                if (const auto valueLength = arg.size() - pos; !valueLength) {
                     return { spacelessArg, "" };
+                } else {
+                    return { spacelessArg, arg.substr(pos, valueLength) };
                 }
-                return { spacelessArg, arg.substr(pos, valueLength) };
             }
         }
         return {};
@@ -310,15 +307,13 @@ private:
         ArgumentVector tokens;
 
         for (auto && arg : args) {
-            const auto assignmentTokens = splitAssignmentFormat(arg);
-            if (!assignmentTokens.first.empty()) {
+            if (const auto assignmentTokens = splitAssignmentFormat(arg); !assignmentTokens.first.empty()) {
                 tokens.push_back(assignmentTokens.first);
                 if (!assignmentTokens.second.empty()) {
                     tokens.push_back(assignmentTokens.second);
                 }
             } else {
-                const auto spacelessTokens = splitSpacelessFormat(arg);
-                if (!spacelessTokens.first.empty()) {
+                if (const auto spacelessTokens = splitSpacelessFormat(arg); !spacelessTokens.first.empty()) {
                     tokens.push_back(spacelessTokens.first);
                     if (!spacelessTokens.second.empty()) {
                         tokens.push_back(spacelessTokens.second);
@@ -339,8 +334,7 @@ private:
 
         // Process help first as it's a special case
         for (size_t i = 1; i < tokens.size(); i++) {
-            const auto arg = tokens.at(i);
-            if (const auto definition = getOptionDefinition(arg)) {
+            if (const auto arg = tokens.at(i); const auto definition = getOptionDefinition(arg)) {
                 if (definition->isHelp) {
                     processDefinitionMatch(definition, tokens, i, false);
                     break;
@@ -350,8 +344,7 @@ private:
 
         // Other arguments
         for (size_t i = 1; i < tokens.size(); i++) {
-            const auto arg = tokens.at(i);
-            if (const auto definition = getOptionDefinition(arg)) {
+            if (const auto arg = tokens.at(i); const auto definition = getOptionDefinition(arg)) {
                 if (!definition->isHelp) {
                     i = processDefinitionMatch(definition, tokens, i, dryRun);
                 }
@@ -379,8 +372,7 @@ private:
         } else if (match->singleStringCallback) {
             if (++currentIndex < tokens.size()) {
                 if (!dryRun) {
-                    const auto value = tokens.at(currentIndex);
-                    if (const auto innerMatch = getOptionDefinition(value)) {
+                    if (const auto value = tokens.at(currentIndex); const auto innerMatch = getOptionDefinition(value)) {
                         throwNoValueError(*match);
                     }
                     match->singleStringCallback(tokens.at(currentIndex));
