@@ -36,7 +36,7 @@
 
 using juzzlin::Argengine;
 
-const std::string name = "Argengine";
+const auto name = "Argengine";
 
 void testDefaultHelpOverride_HelpActive_ShouldFail()
 {
@@ -48,7 +48,7 @@ void testDefaultHelpOverride_HelpActive_ShouldFail()
     } catch (std::runtime_error & e) {
         error = e.what();
     }
-    assert(error == name + ": Option '-h, --help' already defined!");
+    assert(error == std::string(name) + ": Option '-h, --help' already defined!");
 }
 
 void testDefaultHelpOverride_HelpNotActive_ShouldSucceed()

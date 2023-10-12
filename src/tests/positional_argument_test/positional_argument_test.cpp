@@ -35,8 +35,6 @@
 
 using juzzlin::Argengine;
 
-const std::string name = "Argengine";
-
 void testSinglePositionalArgument_NoOtherArguments_ShouldSucceed()
 {
     Argengine ae({ "test", "a" });
