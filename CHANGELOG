@@ -9,6 +9,17 @@ Bug fixes:
 
 Other:
 
+1.2.0
+=====
+
+Release date:
+
+Sun, 15 Oct 2023 22:29:51 +0300
+
+New features:
+
+* Fix GitHub Issue #1: Implement conflicting options
+
 1.1.1
 =====
 
