@@ -52,19 +52,19 @@ private:
     struct OptionDefinition;
 
 public:
-    std::shared_ptr<OptionDefinition> addOption(OptionVariants optionVariants, ValuelessCallback callback, bool required, std::string infoText)
+    std::shared_ptr<OptionDefinition> addOption(OptionSet optionVariants, ValuelessCallback callback, bool required, std::string infoText)
     {
         return addOptionCommon(optionVariants, callback, required, infoText);
     }
 
-    std::shared_ptr<OptionDefinition> addOption(OptionVariants optionVariants, SingleStringCallback callback, bool required, std::string infoText, std::string valueName)
+    std::shared_ptr<OptionDefinition> addOption(OptionSet optionVariants, SingleStringCallback callback, bool required, std::string infoText, std::string valueName)
     {
         const auto od = addOptionCommon(optionVariants, callback, required, infoText);
         od->valueName = valueName;
         return od;
     }
 
-    void addConflictingOptions(ConflictingOptionSet conflictingOptionSet)
+    void addConflictingOptions(OptionSet conflictingOptionSet)
     {
         m_conflictingOptionSets.push_back(conflictingOptionSet);
     }
@@ -154,7 +154,7 @@ public:
 private:
     struct OptionDefinition
     {
-        OptionDefinition(const OptionVariants & variants, ValuelessCallback callback, bool required, std::string infoText)
+        OptionDefinition(const OptionSet & variants, ValuelessCallback callback, bool required, std::string infoText)
           : variants(variants)
           , valuelessCallback(callback)
           , singleStringCallback(nullptr)
@@ -163,7 +163,7 @@ private:
         {
         }
 
-        OptionDefinition(const OptionVariants & variants, SingleStringCallback callback, bool required, std::string infoText)
+        OptionDefinition(const OptionSet & variants, SingleStringCallback callback, bool required, std::string infoText)
           : variants(variants)
           , valuelessCallback(nullptr)
           , singleStringCallback(callback)
@@ -172,7 +172,7 @@ private:
         {
         }
 
-        bool matches(OptionVariants variants) const
+        bool matches(OptionSet variants) const
         {
             for (auto && variant : variants) {
                 if (this->variants.count(variant)) {
@@ -195,7 +195,7 @@ private:
             return str;
         }
 
-        OptionVariants variants;
+        OptionSet variants;
 
         ValuelessCallback valuelessCallback = nullptr;
 
@@ -213,7 +213,7 @@ private:
     };
 
     template<typename CallbackType>
-    std::shared_ptr<OptionDefinition> addOptionCommon(OptionVariants optionVariants, CallbackType callback, bool required, std::string infoText)
+    std::shared_ptr<OptionDefinition> addOptionCommon(OptionSet optionVariants, CallbackType callback, bool required, std::string infoText)
     {
         if (const auto existing = getOptionDefinition(optionVariants)) {
             throwOptionExistingError(*existing);
@@ -248,7 +248,7 @@ private:
     }
 
     using OptionDefinitionPtr = std::shared_ptr<OptionDefinition>;
-    OptionDefinitionPtr getOptionDefinition(OptionVariants variants) const
+    OptionDefinitionPtr getOptionDefinition(OptionSet variants) const
     {
         for (auto && definition : m_optionDefinitions) {
             if (definition->matches(variants)) {
@@ -260,7 +260,7 @@ private:
 
     OptionDefinitionPtr getOptionDefinition(std::string argument) const
     {
-        return getOptionDefinition(OptionVariants { argument });
+        return getOptionDefinition(OptionSet { argument });
     }
 
     std::string name() const
@@ -342,7 +342,7 @@ private:
             }
         }
         for (auto && conflictingOptionSet : m_conflictingOptionSets) {
-            ConflictingOptionSet conflictingOptionSetForError;
+            OptionSet conflictingOptionSetForError;
             for (auto && conflictingOption : conflictingOptionSet) {
                 for (auto && optionDefinition : optionDefinitions) {
                     if (optionDefinition->matches({ conflictingOption })) {
@@ -416,7 +416,7 @@ private:
         return currentIndex;
     }
 
-    [[noreturn]] void throwConflictingOptionsError(const ConflictingOptionSet & conflictingOptionSet) const
+    [[noreturn]] void throwConflictingOptionsError(const OptionSet & conflictingOptionSet) const
     {
         std::string optionsString;
         for (auto && option : conflictingOptionSet) {
@@ -457,7 +457,7 @@ private:
     using OptionDefinitionVector = std::vector<OptionDefinitionPtr>;
     OptionDefinitionVector m_optionDefinitions;
 
-    std::vector<ConflictingOptionSet> m_conflictingOptionSets;
+    std::vector<OptionSet> m_conflictingOptionSets;
 
     MultiStringCallback m_positionalArgumentCallback = nullptr;
 
@@ -476,22 +476,22 @@ Argengine::Argengine(ArgumentVector args, bool addDefaultHelp)
 {
 }
 
-void Argengine::addOption(OptionVariants optionVariants, ValuelessCallback callback, bool required, std::string infoText)
+void Argengine::addOption(OptionSet optionVariants, ValuelessCallback callback, bool required, std::string infoText)
 {
     m_impl->addOption(optionVariants, callback, required, infoText);
 }
 
-void Argengine::addOption(OptionVariants optionVariants, SingleStringCallback callback, bool required, std::string infoText, std::string valueName)
+void Argengine::addOption(OptionSet optionVariants, SingleStringCallback callback, bool required, std::string infoText, std::string valueName)
 {
     m_impl->addOption(optionVariants, callback, required, infoText, valueName);
 }
 
-void Argengine::addHelp(OptionVariants optionVariants, ValuelessCallback callback)
+void Argengine::addHelp(OptionSet optionVariants, ValuelessCallback callback)
 {
     m_impl->addOption(optionVariants, callback, false, SHOW_THIS_HELP_TEXT)->isHelp = true;
 }
 
-void Argengine::addConflictingOptions(ConflictingOptionSet conflictingOptionSet)
+void Argengine::addConflictingOptions(OptionSet conflictingOptionSet)
 {
     m_impl->addConflictingOptions(conflictingOptionSet);
 }

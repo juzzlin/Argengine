@@ -95,9 +95,9 @@ public:
     //! \param callback Callback to be called when the option has been given. Signature: `void()`.
     //! \param required If true, an error will follow if the option is not present during parse().
     //! \param infoText Short info text shown in help/usage.
-    using OptionVariants = std::set<std::string>;
+    using OptionSet = std::set<std::string>;
     using ValuelessCallback = std::function<void()>;
-    void addOption(OptionVariants optionVariants, ValuelessCallback callback, bool required = false, std::string infoText = "");
+    void addOption(OptionSet optionVariants, ValuelessCallback callback, bool required = false, std::string infoText = "");
 
     //! Adds an option with a single value to the configuration.
     //! \param optionVariants A set of possible options for the given action, usually the short and long form: {"-f", "--foo"}
@@ -106,17 +106,16 @@ public:
     //! \param infoText Short info text shown in help/usage.
     //! \param valueName Name of the value in help.
     using SingleStringCallback = std::function<void(std::string)>;
-    void addOption(OptionVariants optionVariants, SingleStringCallback callback, bool required = false, std::string infoText = "", std::string valueName = "VALUE");
+    void addOption(OptionSet optionVariants, SingleStringCallback callback, bool required = false, std::string infoText = "", std::string valueName = "VALUE");
 
     //! Special method to add custom help / decorate output of `printHelp()`. Help is always executed first if present.
     //! \param optionVariants A set of possible options for help, usually the short and long form: {"-h", "--help"}
     //! \param callback Callback to be called when the help option has been given. Signature: `void()`.
-    void addHelp(OptionVariants optionVariants, ValuelessCallback callback);
+    void addHelp(OptionSet optionVariants, ValuelessCallback callback);
 
     //! Adds a options that cannot coexist.
     //! \param conflictingOptions A set of possible options that cannot coexist, e.g.: {"--bar", "--foo"}
-    using ConflictingOptionSet = std::set<std::string>;
-    void addConflictingOptions(ConflictingOptionSet conflictingOptionSet);
+    void addConflictingOptions(OptionSet conflictingOptionSet);
 
     //! \return All given arguments.
     ArgumentVector arguments() const;
