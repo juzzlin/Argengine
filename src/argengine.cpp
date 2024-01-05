@@ -99,7 +99,7 @@ public:
         m_positionalArgumentCallback = callback;
     }
 
-    void printHelp()
+    void printHelp() const
     {
         if (!m_helpText.empty()) {
             *m_out << m_helpText << std::endl
@@ -109,15 +109,16 @@ public:
         *m_out << "Options:" << std::endl
                << std::endl;
 
+        auto sortedOptionDefinitions = m_optionDefinitions;
         if (m_helpSorting == HelpSorting::Ascending) {
-            std::sort(m_optionDefinitions.begin(), m_optionDefinitions.end(), [](const OptionDefinitionPtr & l, const OptionDefinitionPtr & r) {
+            std::sort(sortedOptionDefinitions.begin(), sortedOptionDefinitions.end(), [](const OptionDefinitionPtr & l, const OptionDefinitionPtr & r) {
                 return l->getVariantsString() < r->getVariantsString();
             });
         }
 
         std::vector<std::pair<std::string, std::string>> optionTexts;
         size_t maxLength = 0;
-        for (auto && option : m_optionDefinitions) {
+        for (auto && option : sortedOptionDefinitions) {
             const auto variantsString = option->getVariantsString() + (option->singleStringCallback ? " [" + option->valueName + "]" : "");
             maxLength = std::max(variantsString.size(), maxLength);
             optionTexts.push_back({ variantsString, option->infoText });
@@ -525,7 +526,7 @@ void Argengine::setOutputStream(std::ostream & out)
     m_impl->setOutputStream(out);
 }
 
-void Argengine::printHelp()
+void Argengine::printHelp() const
 {
     m_impl->printHelp();
 }

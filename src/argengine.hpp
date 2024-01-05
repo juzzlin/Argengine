@@ -170,7 +170,7 @@ public:
     void parse(Error & error);
 
     //! Prints help/usage.
-    void printHelp();
+    void printHelp() const;
 
     //! \return Library version in x.y.z
     static std::string version();
