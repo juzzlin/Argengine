@@ -33,6 +33,45 @@
 
 namespace juzzlin {
 
+//! A simple CLI argument (option) parser library for modern C++ based on lambda callbacks.
+//!
+//! A short example:
+//!
+//! int main(int argc, char ** argv)
+//! {
+//!     // Instantiate Argengine and give it the raw argument data.
+//!     Argengine ae(argc, argv);
+//!
+//!     // Add option "-a" that, when set, prints all arguments given to the binary.
+//!     ae.addOption(
+//!       { "-a", "--arguments" }, [&] {
+//!           for (int i = 0; i < argc; i++) {
+//!               std::cout << argv[i] << std::endl;
+//!           }
+//!       },
+//!       false, "Print arguments."); // Set the option non-required and set documentation string.
+//!
+//!     // Add option "-p" that prints the length of the given string e.g. "-p FOO".
+//!     ae.addOption(
+//!       { "-p" }, [](std::string value) {
+//!           std::cout << value.size() << std::endl;
+//!       },
+//!       true, "Print length of given text. This option is required.", "TEXT"); // Set the option required and set documentation string and variable name shown in the documentation.
+//!
+//!     // Parse the arguments and store possible error to variable error.
+//!     Argengine::Error error;
+//!     ae.parse(error);
+//!
+//!     // Check error and print the possible error message.
+//!     if (error.code != Argengine::Error::Code::Ok) {
+//!         std::cerr << error.message << std::endl << std::endl;
+//!         ae.printHelp(); // Print the auto-generated help.
+//!         return EXIT_FAILURE;
+//!     }
+//!
+//!     return EXIT_SUCCESS;
+//! }
+//!
 class Argengine
 {
 public:
