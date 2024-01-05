@@ -501,6 +501,11 @@ Argengine::ArgumentVector Argengine::arguments() const
     return m_impl->arguments();
 }
 
+Argengine::ArgumentVector Argengine::options() const
+{
+    return m_impl->arguments();
+}
+
 void Argengine::setHelpText(std::string helpText)
 {
     m_impl->setHelpText(helpText);

@@ -50,6 +50,7 @@ void testUnknownArgumentBehavior_ShouldThrow()
     } catch (std::runtime_error & e) {
         error = e.what();
     }
+    assert(error == std::string(name) + ": Unknown option '" + ae.options().at(1) + "'!");
     assert(error == std::string(name) + ": Unknown option '" + ae.arguments().at(1) + "'!");
 }
 

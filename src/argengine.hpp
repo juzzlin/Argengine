@@ -121,6 +121,9 @@ public:
     //! \return All given arguments.
     ArgumentVector arguments() const;
 
+    //! Same as arguments().
+    ArgumentVector options() const;
+
     //! Set info text printed on help/usage before argument help.
     //! \param helpText Text shown in help. E.g. "MyApplication v1.0.0, Copyright (c) 2020 Foo Bar".
     void setHelpText(std::string helpText);
