@@ -116,15 +116,16 @@ public:
             });
         }
 
-        std::vector<std::pair<std::string, std::string>> optionTexts;
+        using ArgumentAndHelpText = std::pair<std::string, std::string>;
+        std::vector<ArgumentAndHelpText> helpTexts;
         size_t maxLength = 0;
         for (auto && option : sortedOptionDefinitions) {
             const auto variantsString = option->getVariantsString() + (option->singleStringCallback ? " [" + option->valueName + "]" : "");
             maxLength = std::max(variantsString.size(), maxLength);
-            optionTexts.push_back({ variantsString, option->infoText });
+            helpTexts.push_back({ variantsString, option->infoText });
         }
         const size_t margin = 2;
-        for (auto && optionText : optionTexts) {
+        for (auto && optionText : helpTexts) {
             *m_out << optionText.first;
             for (size_t i = 0; i < maxLength + margin - optionText.first.size(); i++) {
                 *m_out << " ";
@@ -268,7 +269,9 @@ private:
         return "Argengine";
     }
 
-    std::pair<std::string, std::string> splitAssignmentFormat(std::string arg) const
+    using ArgumentAndValue = std::pair<std::string, std::string>;
+
+    ArgumentAndValue splitAssignmentFormat(std::string arg) const
     {
         std::string assignmentFormatArg;
         if (const auto pos = arg.find('='); pos != arg.npos) {
@@ -284,7 +287,7 @@ private:
         return {};
     }
 
-    std::pair<std::string, std::string> splitSpacelessFormat(std::string arg) const
+    ArgumentAndValue splitSpacelessFormat(std::string arg) const
     {
         std::map<OptionDefinitionSP, std::string> matchingDefinitions;
         for (auto && definition : m_optionDefinitions) {
