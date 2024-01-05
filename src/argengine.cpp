@@ -111,7 +111,7 @@ public:
 
         auto sortedOptionDefinitions = m_optionDefinitions;
         if (m_helpSorting == HelpSorting::Ascending) {
-            std::sort(sortedOptionDefinitions.begin(), sortedOptionDefinitions.end(), [](const OptionDefinitionPtr & l, const OptionDefinitionPtr & r) {
+            std::sort(sortedOptionDefinitions.begin(), sortedOptionDefinitions.end(), [](const OptionDefinitionSP & l, const OptionDefinitionSP & r) {
                 return l->getVariantsString() < r->getVariantsString();
             });
         }
@@ -247,8 +247,8 @@ private:
         }
     }
 
-    using OptionDefinitionPtr = std::shared_ptr<OptionDefinition>;
-    OptionDefinitionPtr getOptionDefinition(OptionSet variants) const
+    using OptionDefinitionSP = std::shared_ptr<OptionDefinition>;
+    OptionDefinitionSP getOptionDefinition(OptionSet variants) const
     {
         for (auto && definition : m_optionDefinitions) {
             if (definition->matches(variants)) {
@@ -258,7 +258,7 @@ private:
         return nullptr;
     }
 
-    OptionDefinitionPtr getOptionDefinition(std::string argument) const
+    OptionDefinitionSP getOptionDefinition(std::string argument) const
     {
         return getOptionDefinition(OptionSet { argument });
     }
@@ -286,7 +286,7 @@ private:
 
     std::pair<std::string, std::string> splitSpacelessFormat(std::string arg) const
     {
-        std::map<OptionDefinitionPtr, std::string> matchingDefinitions;
+        std::map<OptionDefinitionSP, std::string> matchingDefinitions;
         for (auto && definition : m_optionDefinitions) {
             for (auto && variant : definition->variants) {
                 if (arg.find(variant) == 0) {
@@ -393,7 +393,7 @@ private:
         }
     }
 
-    size_t processDefinitionMatch(OptionDefinitionPtr match, const ArgumentVector & tokens, size_t currentIndex, bool dryRun) const
+    size_t processDefinitionMatch(OptionDefinitionSP match, const ArgumentVector & tokens, size_t currentIndex, bool dryRun) const
     {
         if (match->valuelessCallback) {
             if (!dryRun) {
@@ -454,7 +454,7 @@ private:
 
     HelpSorting m_helpSorting = HelpSorting::None;
 
-    using OptionDefinitionVector = std::vector<OptionDefinitionPtr>;
+    using OptionDefinitionVector = std::vector<OptionDefinitionSP>;
     OptionDefinitionVector m_optionDefinitions;
 
     std::vector<OptionSet> m_conflictingOptionSets;
