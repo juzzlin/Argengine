@@ -113,7 +113,7 @@ public:
     //! \param callback Callback to be called when the help option has been given. Signature: `void()`.
     void addHelp(OptionSet optionVariants, ValuelessCallback callback);
 
-    //! Adds a options that cannot coexist.
+    //! Adds options that cannot coexist.
     //! \param conflictingOptions A set of possible options that cannot coexist, e.g.: {"--bar", "--foo"}
     void addConflictingOptions(OptionSet conflictingOptionSet);
 
