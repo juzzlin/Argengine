@@ -52,21 +52,26 @@ private:
     struct OptionDefinition;
 
 public:
-    std::shared_ptr<OptionDefinition> addOption(OptionSet optionVariants, ValuelessCallback callback, bool required, std::string infoText)
+    std::shared_ptr<OptionDefinition> addOption(const OptionSet & optionVariants, ValuelessCallback callback, bool required, const std::string & infoText)
     {
         return addOptionCommon(optionVariants, callback, required, infoText);
     }
 
-    std::shared_ptr<OptionDefinition> addOption(OptionSet optionVariants, SingleStringCallback callback, bool required, std::string infoText, std::string valueName)
+    std::shared_ptr<OptionDefinition> addOption(const OptionSet & optionVariants, SingleStringCallback callback, bool required, const std::string & infoText, const std::string & valueName)
     {
         const auto od = addOptionCommon(optionVariants, callback, required, infoText);
         od->valueName = valueName;
         return od;
     }
 
-    void addConflictingOptions(OptionSet conflictingOptionSet)
+    void addConflictingOptions(const OptionSet & conflictingOptionSet)
     {
         m_conflictingOptionSets.push_back(conflictingOptionSet);
+    }
+
+    void addOptionGroup(const OptionSet & optionGroup)
+    {
+        m_optionGroupSets.push_back(optionGroup);
     }
 
     ArgumentVector arguments() const
@@ -79,7 +84,7 @@ public:
         m_out = &out;
     }
 
-    void setHelpText(std::string helpText)
+    void setHelpText(const std::string & helpText)
     {
         m_helpText = helpText;
     }
@@ -173,14 +178,12 @@ private:
         {
         }
 
-        bool matches(OptionSet variants) const
+        bool matches(const OptionSet & variants) const
         {
-            for (auto && variant : variants) {
-                if (this->variants.count(variant)) {
-                    return true;
-                }
-            }
-            return false;
+            return std::find_if(variants.begin(), variants.end(), [this](const auto & variant) {
+                       return this->variants.count(variant);
+                   })
+              != variants.end();
         }
 
         std::string getVariantsString() const
@@ -213,8 +216,12 @@ private:
         std::string valueName = "VALUE";
     };
 
+    using OptionDefinitionSP = std::shared_ptr<OptionDefinition>;
+
+    using OptionDefinitionVector = std::vector<OptionDefinitionSP>;
+
     template<typename CallbackType>
-    std::shared_ptr<OptionDefinition> addOptionCommon(OptionSet optionVariants, CallbackType callback, bool required, std::string infoText)
+    std::shared_ptr<OptionDefinition> addOptionCommon(const OptionSet & optionVariants, CallbackType callback, bool required, const std::string & infoText)
     {
         if (const auto existing = getOptionDefinition(optionVariants)) {
             throwOptionExistingError(*existing);
@@ -248,20 +255,37 @@ private:
         }
     }
 
-    using OptionDefinitionSP = std::shared_ptr<OptionDefinition>;
-    OptionDefinitionSP getOptionDefinition(OptionSet variants) const
+    OptionDefinitionSP getOptionDefinition(const OptionSet & variants) const
     {
-        for (auto && definition : m_optionDefinitions) {
-            if (definition->matches(variants)) {
-                return definition;
-            }
-        }
-        return nullptr;
+        const auto item = std::find_if(m_optionDefinitions.begin(), m_optionDefinitions.end(), [=](const auto & definition) {
+            return definition->matches(variants);
+        });
+        return item != m_optionDefinitions.end() ? *item : nullptr;
     }
 
-    OptionDefinitionSP getOptionDefinition(std::string argument) const
+    OptionDefinitionSP getOptionDefinition(const std::string & argument) const
     {
         return getOptionDefinition(OptionSet { argument });
+    }
+
+    OptionDefinitionSP getOptionDefinition(const std::string & argument, const OptionDefinitionVector & optionDefinitions) const
+    {
+        const auto item = std::find_if(optionDefinitions.begin(), optionDefinitions.end(), [=](const auto & definition) {
+            return definition->matches({ argument });
+        });
+        return item != optionDefinitions.end() ? *item : nullptr;
+    }
+
+    OptionDefinitionVector getOptionsDefinitionsForTokens(const ArgumentVector & tokens) const
+    {
+        OptionDefinitionVector optionDefinitions;
+        for (size_t i = 1; i < tokens.size(); i++) {
+            const auto arg = tokens.at(i);
+            if (const auto definition = getOptionDefinition(arg); definition) {
+                optionDefinitions.push_back(definition);
+            }
+        }
+        return optionDefinitions;
     }
 
     std::string name() const
@@ -271,7 +295,7 @@ private:
 
     using ArgumentAndValue = std::pair<std::string, std::string>;
 
-    ArgumentAndValue splitAssignmentFormat(std::string arg) const
+    ArgumentAndValue splitAssignmentFormat(const std::string & arg) const
     {
         std::string assignmentFormatArg;
         if (const auto pos = arg.find('='); pos != arg.npos) {
@@ -287,7 +311,7 @@ private:
         return {};
     }
 
-    ArgumentAndValue splitSpacelessFormat(std::string arg) const
+    ArgumentAndValue splitSpacelessFormat(const std::string & arg) const
     {
         std::map<OptionDefinitionSP, std::string> matchingDefinitions;
         for (auto && definition : m_optionDefinitions) {
@@ -311,7 +335,7 @@ private:
         return {};
     }
 
-    ArgumentVector tokenize(ArgumentVector args) const
+    ArgumentVector tokenize(const ArgumentVector & args) const
     {
         ArgumentVector tokens;
 
@@ -338,12 +362,7 @@ private:
 
     void checkConflictingOptions(const ArgumentVector & tokens)
     {
-        OptionDefinitionVector optionDefinitions;
-        for (size_t i = 1; i < tokens.size(); i++) {
-            if (const auto arg = tokens.at(i); const auto definition = getOptionDefinition(arg)) {
-                optionDefinitions.push_back(definition);
-            }
-        }
+        const auto optionDefinitions = getOptionsDefinitionsForTokens(tokens);
         for (auto && conflictingOptionSet : m_conflictingOptionSets) {
             OptionSet conflictingOptionSetForError;
             for (auto && conflictingOption : conflictingOptionSet) {
@@ -359,11 +378,32 @@ private:
         }
     }
 
+    void checkOptionGroups(const ArgumentVector & tokens)
+    {
+        const auto optionDefinitions = getOptionsDefinitionsForTokens(tokens);
+        for (auto && optionGroupSet : m_optionGroupSets) {
+            size_t optionsFound = 0;
+            OptionSet missingOptions;
+            for (auto && optionGroupOption : optionGroupSet) {
+                if (const auto optionDefinition = getOptionDefinition(optionGroupOption, optionDefinitions); optionDefinition) {
+                    optionsFound++;
+                } else {
+                    missingOptions.insert(optionGroupOption);
+                }
+            }
+            if (optionsFound && optionsFound < optionGroupSet.size()) {
+                throwOptionGroupError(optionGroupSet, missingOptions);
+            }
+        }
+    }
+
     void processArgs(bool dryRun)
     {
         const auto tokens = tokenize(m_args);
 
         checkConflictingOptions(tokens);
+
+        checkOptionGroups(tokens);
 
         // Process help first as it's a special case
         for (size_t i = 1; i < tokens.size(); i++) {
@@ -419,15 +459,21 @@ private:
         return currentIndex;
     }
 
-    [[noreturn]] void throwConflictingOptionsError(const OptionSet & conflictingOptionSet) const
+    std::string optionSetToString(const OptionSet & options) const
     {
         std::string optionsString;
-        for (auto && option : conflictingOptionSet) {
+        for (auto && option : options) {
             if (!optionsString.empty() && optionsString.back() == '\'') {
                 optionsString += ", ";
             }
             optionsString += "'" + option + "'";
         }
+        return optionsString;
+    }
+
+    [[noreturn]] void throwConflictingOptionsError(const OptionSet & conflictingOptionSet) const
+    {
+        const auto optionsString = optionSetToString(conflictingOptionSet);
         throw std::runtime_error(name() + ": Conflicting options: " + optionsString + ". These options cannot coexist.");
     }
 
@@ -436,12 +482,19 @@ private:
         throw std::runtime_error(name() + ": Option '" + existing.getVariantsString() + "' already defined!");
     }
 
+    [[noreturn]] void throwOptionGroupError(const OptionSet & optionGroup, const OptionSet & missingOptions) const
+    {
+        const auto optionsString = optionSetToString(optionGroup);
+        const auto missingOptionsString = optionSetToString(missingOptions);
+        throw std::runtime_error(name() + ": These options must coexist: " + optionsString + ". Missing options: " + missingOptionsString + ".");
+    }
+
     [[noreturn]] void throwRequiredError(const OptionDefinition & existing) const
     {
         throw std::runtime_error(name() + ": Option '" + existing.getVariantsString() + "' is required!");
     }
 
-    [[noreturn]] void throwUnknownArgumentError(std::string arg) const
+    [[noreturn]] void throwUnknownArgumentError(const std::string & arg) const
     {
         throw std::runtime_error(name() + ": Unknown option '" + arg + "'!");
     }
@@ -457,10 +510,11 @@ private:
 
     HelpSorting m_helpSorting = HelpSorting::None;
 
-    using OptionDefinitionVector = std::vector<OptionDefinitionSP>;
     OptionDefinitionVector m_optionDefinitions;
 
     std::vector<OptionSet> m_conflictingOptionSets;
+
+    std::vector<OptionSet> m_optionGroupSets;
 
     MultiStringCallback m_positionalArgumentCallback = nullptr;
 
@@ -497,6 +551,11 @@ void Argengine::addHelp(OptionSet optionVariants, ValuelessCallback callback)
 void Argengine::addConflictingOptions(OptionSet conflictingOptionSet)
 {
     m_impl->addConflictingOptions(conflictingOptionSet);
+}
+
+void Argengine::addOptionGroup(OptionSet optionGroup)
+{
+    m_impl->addOptionGroup(optionGroup);
 }
 
 Argengine::ArgumentVector Argengine::arguments() const

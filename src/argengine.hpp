@@ -117,6 +117,10 @@ public:
     //! \param conflictingOptions A set of possible options that cannot coexist, e.g.: {"--bar", "--foo"}
     void addConflictingOptions(OptionSet conflictingOptionSet);
 
+    //! Adds options that must coexist.
+    //! \param optionGroup A set of possible options that must coexist, e.g.: {"--bar", "--foo"}
+    void addOptionGroup(OptionSet optionGroup);
+
     //! \return All given arguments.
     ArgumentVector arguments() const;
 

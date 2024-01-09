@@ -279,6 +279,38 @@ Now, if we give both `foo` and `bar` to the application, we'll get an error like
 Argengine: Conflicting options: 'bar', 'foo'. These options cannot coexist.
 ```
 
+## General: Adding option groups
+
+Option groups will make the given options depend on each other.
+
+Consider this example code:
+
+```
+    ...
+
+    juzzlin::Argengine ae(argc, argv);
+    ae.addOption(
+      { "foo" }, [] {
+          std::cout << "Foo enabled!" << std::endl;
+      });
+
+    ae.addOption(
+      { "bar" }, [] {
+          std::cout << "Bar enabled!" << std::endl;
+      });
+
+    // Add "foo" and "bar" as an option group.
+    ae.addOptionGroup({ "foo", "bar" });
+    ...
+```
+
+Now, if we give only `foo` to the application, we'll get an error like this:
+
+
+```
+Argengine: These options must coexist: 'bar', 'foo'. Missing options: 'bar'.
+```
+
 ## General: Error handling
 
 For error handling there are two options: exceptions or error value.
