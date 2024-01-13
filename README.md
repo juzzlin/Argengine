@@ -66,7 +66,7 @@ Link to `libArgengine_static.a` or `libArgengine.so`.
 
 The basic principle is that for each option a lambda callback is added.
 
-Valueless:
+A valueless callback:
 
 ```
     ...
@@ -80,7 +80,7 @@ Valueless:
     ...
 ```
 
-Single-value:
+A single-value callback:
 
 ```
     ...
@@ -94,7 +94,7 @@ Single-value:
     ...
 ```
 
-There can be as many option variants as liked, usually the short and long version e.g `-f` and `--foo`.
+There can be as many option variants as liked, usually the short and long versions, e.g `-f` and `--foo`.
 
 `Argengine` doesn't care about the naming of the options and they can be anything: `-f`, `a`, `/c`, `foo`, `--foo` ...
 
@@ -112,13 +112,13 @@ Positional arguments (for example a file name for a text editor after other opti
     ...
 ```
 
-If callback for positional arguments is set, then no errors about `unknown options` will occur as all additional options will be taken as positional arguments.
+If the callback for positional arguments is set, then no errors about `unknown options` will occur as all additional options will be taken as positional arguments.
 
 # Help
 
 By default, `Argengine` will create a simple help that is shown with `-h` or `--help`.
 
-Without any additional options possible output will look like this:
+Without any additional options a possible output will look like this:
 
 ```
 Usage: ./ex1 [OPTIONS]
