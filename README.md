@@ -352,7 +352,7 @@ Example of handling error values:
 
 # Requirements
 
-C++11
+C++17
 
 # Licence
 
