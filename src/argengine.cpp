@@ -615,7 +615,7 @@ void Argengine::parse(Error & error)
 
 std::string Argengine::version()
 {
-    return "1.2.0";
+    return "1.3.0";
 }
 
 Argengine::~Argengine() = default;
